@@ -11,11 +11,11 @@ import numpy as np
 app = Flask(__name__)
 
 # Specify the path to the folder containing your images
-IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/static/images/'
+IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/'
 app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
 
 # Load the JSON data
-with open('/home/vatsasree/Research/scripts/applic/dictt.json', 'r') as json_file:
+with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/dictt.json', 'r') as json_file:
     image_data = json.load(json_file)
 
 # Get the list of image files in the folder
@@ -185,7 +185,7 @@ def conn_image(image_index):
         
         image_with_connections = conn(image, euclidean_df)
         # Specify the folder for saving the output images
-        output_folder = '/home/vatsasree/Research/scripts/applic/static/images/output_images'
+        output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
 
         # Save the result in the output folder
@@ -230,7 +230,7 @@ def para_image(image_index):
         image_with_para = para(image, target_components,euclidean_df, component_df)
 
         ## Specify the folder for saving the output images
-        output_folder = '/home/vatsasree/Research/scripts/applic/static/images/output_images'
+        output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
 
         # Save the result in the output folder
