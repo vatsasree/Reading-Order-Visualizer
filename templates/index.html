@@ -62,7 +62,7 @@
                         <input {{ 'checked' if 'para' not in request.url and 'conn' not in request.url else '' }}
                         type="radio" name="view_option" value="paragraph"
                                onclick="window.location.href='{{ url_for('index', image_index=image_files.index(current_image)) }}'">
-                        <img src="/static/orig.png" alt="View Original" width="50px">
+                        <!--img src="/static/orig.png" alt="View Original" width="50px"-->
                         <span>View Original </span>
                     </label>
                 
@@ -70,7 +70,7 @@
                         <input {{ 'checked' if 'conn' in request.url else '' }}
                         type="radio" name="view_option" value="connections"
                                onclick="window.location.href='{{ url_for('conn_image', image_index=image_files.index(current_image)) }}'">
-                        <img src="/static/conn.png" alt="View Connections" width="50px">
+                        <!--img src="/static/conn.png" alt="View Connections" width="50px"-->
                         <span>View Connections </span>
                     </label>
                 
@@ -78,8 +78,16 @@
                         <input {{ 'checked' if 'para' in request.url else '' }}
                         type="radio" name="view_option" value="paragraph"
                                onclick="window.location.href='{{ url_for('para_image', image_index=image_files.index(current_image)) }}'">
-                        <img src="/static/para.png" alt="View Paragraph" width="50px">
+                        <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
                         <span>View Paragraph </span>
+                    </label>
+
+                    <label>
+                        <input {{ 'checked' if 'order' in request.url else '' }}
+                        type="radio" name="view_option" value="final_order"
+                               onclick="window.location.href='{{ url_for('final_order', image_index=image_files.index(current_image)) }}'">
+                        <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
+                        <span>View Final Reading Order </span>
                     </label>
                 </form>
                 
