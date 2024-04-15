@@ -10,12 +10,12 @@ app = Flask(__name__)
 
 # Specify the path to the folder containing your images
 # IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Pagg/Dataset/Dataset'
-IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/selected'
-# IMAGE_FOLDER = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Pagg/Prima"
+# IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/selected'
+IMAGE_FOLDER = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Pagg/Prima"
 app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
 
 # Load the JSON data
-with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/doclaynet/dic_doclaynet_new.json', 'r') as json_file:
+with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/prima/dic_prima.json', 'r') as json_file:
     image_data = json.load(json_file)
 
 # Get the list of image files in the folder
@@ -23,7 +23,7 @@ image_files = [f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith(('.png'
 image_files_json = image_data.keys()
 
 #add png extension to image_files_json
-image_files_json = [f+'.png' for f in image_files_json]
+image_files_json = [f+'.jpg' for f in image_files_json]
 print("Image files json:",len(image_files_json))
 
 #find common images between image_files and image_files_json
@@ -55,7 +55,8 @@ def show_image(image_index):
         current_image = image_files[image_index]
         # image_path = 'images/subsubset/' + current_image
         # image_path = 'images/Pagg/Dataset/Dataset/' + current_image
-        image_path = 'images/selected/' + current_image
+        # image_path = 'images/selected/' + current_image
+        image_path = 'images/Pagg/Prima/' + current_image
         return render_template('index.html', image_path=image_path, current_image=current_image, image_files=image_files)
     else:
         return "Invalid image index"
@@ -253,5 +254,5 @@ def final_order(image_index):
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",debug=True, port=5002)
+    app.run(host="0.0.0.0",debug=True, port=5001)
 

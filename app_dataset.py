@@ -112,7 +112,9 @@ def conn_image(image_index):
 
     else:
     
-        return "Invalid image index"
+        # return "Invalid image index"
+        print("Invalid image index")
+        return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
 
 
 @app.route('/para_image_1/<int:image_index>')
@@ -170,6 +172,8 @@ def para_image_2(image_index):
         component_df = pd.DataFrame(component_data)
         
         image_with_para = para_2(image, component_df)
+        if image_with_para is None:
+            return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
 
         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
@@ -184,7 +188,9 @@ def para_image_2(image_index):
 
     else:
     
-        return "Invalid image index"
+        # return "Invalid image index"
+        print("Invalid image index")
+        return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
     
 
 @app.route('/para_image_3/<int:image_index>')
@@ -201,6 +207,8 @@ def para_image_3(image_index):
         component_df = pd.DataFrame(component_data)
         
         image_with_para = para_2(image, component_df)
+        if image_with_para is None:
+            return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
 
         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
@@ -215,7 +223,9 @@ def para_image_3(image_index):
 
     else:
     
-        return "Invalid image index"
+        # return "Invalid image index"
+        print("Invalid image index")
+        return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
     
 
 @app.route('/final_order/<int:image_index>')
@@ -252,9 +262,11 @@ def final_order(image_index):
 
     else:
     
-        return "Invalid image index"
+        # return "Invalid image index"
+        print("Invalid image index")
+        return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",debug=True, port=5001)
+    app.run(host="0.0.0.0",debug=True, port=5000)
 
