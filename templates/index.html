@@ -51,42 +51,84 @@
                 </form>
 
                 <div class="navigation-buttons mb-3">
-                    <a href="{{ url_for('prev_image', image_index=image_files.index(current_image)) }}"
-                        class="btn btn-secondary">Previous</a>
-                    <a href="{{ url_for('next_image', image_index=image_files.index(current_image)) }}"
-                        class="btn btn-secondary">Next</a>
+                    {% if current_image %}
+                        <a href="{{ url_for('prev_image', image_index=image_files.index(current_image)) }}"
+                            class="btn btn-secondary">Previous</a>
+                        <a href="{{ url_for('next_image', image_index=image_files.index(current_image)) }}"
+                            class="btn btn-secondary">Next</a>
+                    {% endif %}
                 </div>
 
                 <form>
                     <label>
                         <input {{ 'checked' if 'para' not in request.url and 'conn' not in request.url else '' }}
                         type="radio" name="view_option" value="paragraph"
-                               onclick="window.location.href='{{ url_for('index', image_index=image_files.index(current_image)) }}'">
-                        <!--img src="/static/orig.png" alt="View Original" width="50px"-->
+                        {% if current_image %}
+                            onclick="window.location.href='{{ url_for('index', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                            <!--img src="/static/orig.png" alt="View Original" width="50px"-->
                         <span>View Original </span>
                     </label>
                 
                     <label>
                         <input {{ 'checked' if 'conn' in request.url else '' }}
                         type="radio" name="view_option" value="connections"
-                               onclick="window.location.href='{{ url_for('conn_image', image_index=image_files.index(current_image)) }}'">
-                        <!--img src="/static/conn.png" alt="View Connections" width="50px"-->
+                        {%if current_image %}    
+                            onclick="window.location.href='{{ url_for('conn_image', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                               <!--img src="/static/conn.png" alt="View Connections" width="50px"-->
                         <span>View Connections </span>
                     </label>
                 
                     <label>
-                        <input {{ 'checked' if 'para' in request.url else '' }}
+                        <input {{ 'checked' if 'para_image_1' in request.url else '' }}
                         type="radio" name="view_option" value="paragraph"
-                               onclick="window.location.href='{{ url_for('para_image', image_index=image_files.index(current_image)) }}'">
-                        <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
-                        <span>View Paragraph </span>
+                        {% if current_image %} 
+                            onclick="window.location.href='{{ url_for('para_image_1', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                               <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
+                        <span>View Paragraph Before Pinp</span>
+                    </label>
+
+                    <label>
+                        <input {{ 'checked' if 'para_image_2' in request.url else '' }}
+                        type="radio" name="view_option" value="paragraph"
+                        {% if current_image %}
+                            onclick="window.location.href='{{ url_for('para_image_2', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                               <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
+                        <span>View Paragraph After pinp not ordered </span>
+                    </label>
+
+                    <label>
+                        <input {{ 'checked' if 'para_image_3' in request.url else '' }}
+                        type="radio" name="view_option" value="paragraph"
+                        {% if current_image%}
+                            onclick="window.location.href='{{ url_for('para_image_3', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                               <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
+                        <span>View Paragraph after pinp ordered</span>
                     </label>
 
                     <label>
                         <input {{ 'checked' if 'order' in request.url else '' }}
                         type="radio" name="view_option" value="final_order"
-                               onclick="window.location.href='{{ url_for('final_order', image_index=image_files.index(current_image)) }}'">
-                        <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
+                        {% if current_image %}       
+                            onclick="window.location.href='{{ url_for('final_order', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                            <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
                         <span>View Final Reading Order </span>
                     </label>
                 </form>
@@ -102,9 +144,14 @@
                         <!-- zoomist-image is required -->
                         <div class="zoomist-image">
                             <!-- you can add anything you want to zoom here. -->
-                            <div id="image-container">
-                                <img src="{{ url_for('static', filename=image_path) }}" alt="Current Image"
-                                    class="img-fluid">
+                            <!-- div id="image-container" -->
+                            <div id="image-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                                {% if error_message %}
+                                    <p style="text-align: center;">{{ error_message }}</p>
+                                {% else %}
+                                    <img src="{{ url_for('static', filename=image_path) }}" alt="Current Image"
+                                        class="img-fluid">
+                                {% endif %}
                             </div>
                         </div>
                     </div>
