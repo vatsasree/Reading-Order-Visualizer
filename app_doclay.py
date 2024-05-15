@@ -15,7 +15,7 @@ IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer
 app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
 
 # Load the JSON data
-with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/doclaynet/dic_doclaynet_new.json', 'r') as json_file:
+with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/dic_doclaynet_bhaashini.json', 'r') as json_file:
     image_data = json.load(json_file)
 
 # Get the list of image files in the folder

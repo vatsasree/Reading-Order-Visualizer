@@ -109,6 +109,34 @@ def para(image, target_components, euclidean,component):
     #cv2.imwrite(output_path, cv2.cvtColor(image_with_boxes, cv2.COLOR_RGB2BGR))
     return image_with_boxes
 
+def para_2(image,component):
+    try:
+        print(component)
+        if 'Order' in component.columns and not component.empty:
+            # Sort component based on order
+            component = component.sort_values(by='Order')
+        else:
+            print("Error: 'Order' column not found or DataFrame is empty")
+            return None  # Return the original image or some default value
+
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        centers=[]
+        for idx, row in component.iterrows():
+            top_left = (int(row['Left'][0]), int(row['Top'][1]))
+            bottom_right = (int(row['Right'][0]), int(row['Bottom'][1]))
+            #get center of the paragraph from top left and bottom right
+            center = (int((top_left[0] + bottom_right[0]) / 2), int((top_left[1] + bottom_right[1]) / 2))
+            centers.append(center)
+            cv2.rectangle(image, top_left, bottom_right, (0, 0, 255), 2)
+            cv2.putText(image, str(row['Order']), (int(row['Left'][0]), int(row['Top'][1] - 30)), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+
+        for i in range(1, len(centers)):
+            cv2.line(image, centers[i - 1], centers[i], (0, 0, 255), 2)
+        
+        return image
+    except Exception as e:
+        print(e)
+        return image
 
 def reading_order_with_line(image, euclidean, header_p, footer_p):
     regions = []
@@ -169,3 +197,125 @@ def reading_order_with_line(image, euclidean, header_p, footer_p):
     cv2.line(image_with_boxes, (0, footer_position), (image_width, footer_position), (255, 255, 0), 2)
 
     return image_with_boxes, regions
+
+
+#New idea of getting word reading order by sorting the words from left to right and top to bottom
+
+def get_box_id_from_coordinates(boxes_df, box_coordinates):
+    """Get the index of the box in boxes_df based on its coordinates."""
+    x1,y1,x2,y2 = box_coordinates
+    for index, row in boxes_df.iterrows():
+        if (int(row['Top'][1]) == int(y1) and
+            int(row['Left'][0]) == int(x1) and
+            int(row['Bottom'][1]) == int(y2) and
+            int(row['Right'][0]) == int(x2)):
+            return index
+    return None
+
+def get_TLBR_from_CSV(df):
+    top = df['Top']
+    left = df['Left']
+    bottom = df['Bottom']
+    right = df['Right']
+   
+    top_left = [int(left[0]), int(top[1])]
+    bottom_right = [int(right[0]), int(bottom[1])]
+   
+    return [top_left[0],top_left[1], bottom_right[0], bottom_right[1]]
+
+def sort_boxesy(box):
+    return box[1]
+
+def sort_boxesx(box):
+    return box[0]
+
+def calculate_median(boxes):
+    boxes.sort()
+    n = len(boxes)
+    if n % 2 == 0:
+        return (boxes[n//2] + boxes[n//2 - 1])/2
+    else:
+        return boxes[n//2]
+
+def sort_words(boxes, image): #from Krishna Tulsyan's code
+    """Sort boxes - (x, y, x+w, y+h) from left to right, top to bottom."""
+    mean_height = sum([y2 - y1 for _, y1, _, y2 in boxes]) / len(boxes)
+    median_height = calculate_median([y2 - y1 for _, y1, _, y2 in boxes])
+
+    # print("MEAN HEIGHT",mean_height)
+    # print("MEDIAN HEIGHT",median_height)
+    # boxes.view('i8,i8,i8,i8').sort(order=['f1'], axis=0)
+    current_line = boxes[0][1]
+    lines = []
+    tmp_line = []
+
+    order=0
+    # for expt: to see if the sorted_coordinates_y are correctly in a same line
+    # for box in boxes:
+    #     order+=1
+    #     cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), 2)
+    #     cv2.putText(image, str(order), (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1)
+    # cv2.imwrite('/home2/sreevatsa/ops/boxes_ordered_test_2.png', image)
+
+
+    for box in boxes:
+        # if box[1] > current_line + mean_height:
+        if box[1] >= current_line + (median_height/2):
+            lines.append(tmp_line)
+            tmp_line = [box]
+            current_line = box[1]
+            continue
+        tmp_line.append(box)
+    lines.append(tmp_line)
+
+    for line in lines:
+        line.sort(key=lambda box: box[0])
+
+    return lines
+
+
+def get_coordinates_from_component(component_df, boxes_df, image_file):
+    # image = cv2.imread(image_file)
+    image = cv2.cvtColor(image_file, cv2.COLOR_BGR2RGB)
+    order = 0
+    c = 0
+    centers = []  # List to store the centers of the boxes
+    # boxes_df.loc[:,'Visited'] = 0
+    # boxes_df.loc[:,'Order'] = -1
+    for index, row in component_df.iterrows():
+        c += 1
+        coordinates = []
+        box_ids = row['Component'][0]
+        for box_id in box_ids:
+            coordinates.append(get_TLBR_from_CSV(boxes_df.iloc[box_id]))
+
+        sorted_coordinates_y = sorted(coordinates, key=sort_boxesy)
+        sorted_coos = sort_words(sorted_coordinates_y, image)
+
+        cc=0
+        for line in sorted_coos:
+            cc+=1
+            for i, box in enumerate(line):
+                # print(box)
+                # box_id = get_box_id_from_coordinates(boxes_df, box)
+
+                # if boxes_df.at[box_id, 'Visited'] == 0:
+                order += 1
+                center = ((box[0] + box[2]) // 2, (box[1] + box[3]) // 2)  # Calculate the center of the box
+                centers.append(center)  # Add the center to the list
+                cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), 2)
+                cv2.putText(image, str(order), (box[0], box[1] - 0), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1)
+
+                # Update the Order column in boxes_df with the current order value
+                #box_id = get_box_id_from_coordinates(boxes_df, box)
+                #boxes_df.at[box_id, 'Order'] = order
+                #boxes_df.at[box_id, 'Visited'] = 1
+
+    # Draw a line between each pair of consecutive centers
+    for i in range(1, len(centers)):
+        cv2.line(image, centers[i - 1], centers[i], (0, 0, 255), thickness=2)
+
+    #boxes_df = boxes_df.sort_values(by='Order')
+    #boxes_df.to_csv('//home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/boxes_df.csv', index=False)  
+    # return boxes_df
+    return image

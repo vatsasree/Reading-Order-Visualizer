@@ -15,21 +15,26 @@ IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer
 app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
 
 # Load the JSON data
-with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2.json', 'r') as json_file:
-    image_data = json.load(json_file)
+# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2.json', 'r') as json_file:
+#     image_data = json.load(json_file)
 
-with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2_2.json', 'r') as json_file_2:
-    image_data_2 = json.load(json_file_2)
+# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2_2.json', 'r') as json_file_2:
+#     image_data_2 = json.load(json_file_2)
 
-with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2_3.json', 'r') as json_file_3:
-    image_data_3 = json.load(json_file_3)
+# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2_3.json', 'r') as json_file_3:
+#     image_data_3 = json.load(json_file_3)
 
-with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2_4.json', 'r') as json_file_4:
-    image_data_4 = json.load(json_file_4)
+# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2_4.json', 'r') as json_file_4:
+#     image_data_4 = json.load(json_file_4)
 
-image_data.update(image_data_2)
-image_data.update(image_data_3)
-image_data.update(image_data_4)
+with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/dic_dataset1_chebyshev.json' , 'r') as json_file_5:
+    image_data_5 = json.load(json_file_5)
+
+# image_data.update(image_data_2)
+# image_data.update(image_data_3)
+# image_data.update(image_data_4)
+
+image_data = image_data_5
 
 print("Length of image data after merging:",len(image_data))
 
