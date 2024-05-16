@@ -121,6 +121,7 @@ def para_image_1(image_index):
         # target_components = image_data.get(current_image_sp,{}).get('paragraph',{}).get('target_components')
         
         image_with_para = para_2(image, component_df)
+
         if image_with_para is None:
             return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
 
@@ -157,6 +158,7 @@ def para_image_2(image_index):
         component_df = pd.DataFrame(component_data)
         
         image_with_para = para_2(image, component_df)
+
         if image_with_para is None:
             return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
 
@@ -191,7 +193,9 @@ def para_image_3(image_index):
         component_data = image_data.get(current_image_sp, {}).get('paragraph_after_pinp_ordered', {}).get('component')
         component_df = pd.DataFrame(component_data)
         
+        #<function to ignore header and footers>
         image_with_para = para_2(image, component_df)
+
         if image_with_para is None:
             return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
 
@@ -232,6 +236,7 @@ def final_order(image_index):
         header_p = 10
         footer_p = 10
         # image_with_para,_ = reading_order_with_line(image,euclidean_df, header_p, footer_p)
+        #<function to ignore header and footer>
         image_with_para = get_coordinates_from_component(component_df, euclidean_df_2,image)
 
         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'

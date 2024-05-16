@@ -27,7 +27,7 @@ app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
 # with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2_4.json', 'r') as json_file_4:
 #     image_data_4 = json.load(json_file_4)
 
-with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/dic_dataset1_chebyshev.json' , 'r') as json_file_5:
+with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/dic_dataset1_chebyshev_no_margins.json' , 'r') as json_file_5:
     image_data_5 = json.load(json_file_5)
 
 # image_data.update(image_data_2)
@@ -233,8 +233,14 @@ def para_image_3(image_index):
         return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
     
 
-@app.route('/final_order/<int:image_index>')
-def final_order(image_index):
+# @app.route('/final_order/<int:image_index>')
+@app.route('/final_order')
+def final_order():
+    image_index = request.args.get('image_index', type=int)
+    header_p = request.args.get('header_p', default=0, type=int)
+    footer_p = request.args.get('footer_p', default=0, type=int)
+    width_p = request.args.get('width_p', default=0, type=int)
+
     if 0 <= image_index < total_images:
         current_image = image_files[image_index]
         current_image_sp = image_files[image_index].split('.')[0]
@@ -243,16 +249,21 @@ def final_order(image_index):
         
         image = load_image(image_path)
 
+        component = image_data.get(current_image_sp, {}).get('reading_order', {}).get('component')
         component_df = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('new'))
+        print("Component:",component_df)
         euclidean_df_2 = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('euclidean'))
 
         # euclidean_data = image_data.get(current_image_sp, {}).get('reading_order', {}).get('new_euclidean')
         # euclidean_df = pd.DataFrame(euclidean_data)
         
-        header_p = 10
-        footer_p = 10
+        # header_p = 10
+        # footer_p = 10
+        
         # image_with_para,_ = reading_order_with_line(image,euclidean_df, header_p, footer_p)
-        image_with_para = get_coordinates_from_component(component_df, euclidean_df_2,image)
+        component_df_1 = ignore_margins(component_df,width_p,header_p,footer_p,image_path)
+        #<function to ignore header and footer>
+        image_with_para = get_coordinates_from_component(component_df_1, euclidean_df_2,image)
 
         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
