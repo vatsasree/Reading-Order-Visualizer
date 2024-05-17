@@ -133,21 +133,69 @@
                     </label>
                 </form>
 
-                <form method="get" action="{{ url_for('final_order') }}">
+                <!--form method="get" action="{{ url_for('final_order') }}">
                     <div class="mb-3">
                         <label for="header-input" class="form-label">Header:</label>
-                        <input type="number" id="header-input" name="header_p" class="form-control" required>
+                        <input type="number" id="header-input" name="header_p" class="form-control form-control-sm" style="width: 100px;" required>
                     </div>
                     <div class="mb-3">
                         <label for="footer-input" class="form-label">Footer:</label>
-                        <input type="number" id="footer-input" name="footer_p" class="form-control" required>
+                        <input type="number" id="footer-input" name="footer_p" class="form-control form-control-sm" style="width: 100px;" required>
                     </div>
                     <div class="mb-3">
                         <label for="width-input" class="form-label">Width:</label>
-                        <input type="number" id="width-input" name="width_p" class="form-control" required>
+                        <input type="number" id="width-input" name="width_p" class="form-control form-control-sm" style="width: 100px;" required>
                     </div>
                     <input type="hidden" name="image_index" value="{{ image_files.index(current_image) }}">
                     <input type="submit" value="Submit" class="btn btn-primary">
+                </form -->
+                <form method="get" action="{{ url_for('final_order') }}">
+                    <div class="mb-3">
+                        <a class="btn btn-primary" data-bs-toggle="collapse" href="#ignoreMargins" role="button" aria-expanded="false" aria-controls="ignoreMargins">
+                            Ignore Margins
+                        </a>
+                        <div class="collapse" id="ignoreMargins">
+                            <div class="card card-body">
+                                <label for="header-input" class="form-label">Header:</label>
+                                <input type="number" id="header-input" name="header_p" class="form-control form-control-sm" style="width: 100px;" required>
+                
+                                <label for="footer-input" class="form-label">Footer:</label>
+                                <input type="number" id="footer-input" name="footer_p" class="form-control form-control-sm" style="width: 100px;" required>
+                
+                                <label for="width-input" class="form-label">Width:</label>
+                                <input type="number" id="width-input" name="width_p" class="form-control form-control-sm" style="width: 100px;" required>
+                            </div>
+                            <input type="hidden" name="image_index" value="{{ image_files.index(current_image) }}">
+                            <input type="submit" value="Submit" class="btn btn-primary">
+                        </div>
+                        
+                    </div>
+                </form>
+
+                <form method="get" action="{{ url_for('final_order') }}">
+                    <div class="mb-3">
+                        <a class="btn btn-primary" data-bs-toggle="collapse" href="#adjustParameters" role="button" aria-expanded="false" aria-controls="adjustParameters">
+                            Adjust Display Parameters
+                        </a>
+                        <div class="collapse" id="adjustParameters">
+                            <div class="card card-body">
+                                <label for="font-size-input" class="form-label">Font Size: <i>default=0.6</i></label>
+                                <input type="number" step="0.1" id="font-size-input" name="font_size" class="form-control form-control-sm" style="width: 100px;" required>
+
+                                <label for="font-thickness-input" class="form-label">Font Thickness: <i>default=1</i></label>
+                                <input type="number" id="font-thickness-input" name="font_thickness" class="form-control form-control-sm" style="width: 100px;" required>
+
+                                <label for="box-thickness-input" class="form-label">Box Thickness: <i>default=2</i></label>
+                                <input type="number" id="box-thickness-input" name="box_thickness" class="form-control form-control-sm" style="width: 100px;" required>
+
+                                <label for="line-thickness-input" class="form-label">Line Thickness: <i>default=2</i></label>
+                                <input type="number" id="line-thickness-input" name="line_thickness" class="form-control form-control-sm" style="width: 100px;" required>
+                            </div>
+                            <input type="hidden" name="image_index" value="{{ image_files.index(current_image) }}">
+                            <input type="submit" value="Submit" class="btn btn-primary">
+                        </div>
+                    </div>
+                    
                 </form>
                 
             </div>

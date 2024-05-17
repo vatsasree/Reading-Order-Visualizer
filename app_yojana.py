@@ -9,41 +9,21 @@ import numpy as np
 app = Flask(__name__)
 
 # Specify the path to the folder containing your images
-IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Pagg/Dataset/Dataset'
+# IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Pagg/Dataset/Dataset'
 # IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/selected'
-# IMAGE_FOLDER = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Pagg/Prima"
+IMAGE_FOLDER = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Pagg/yojana"
 app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
 
 # Load the JSON data
-# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2.json', 'r') as json_file:
-#     image_data = json.load(json_file)
-
-# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2_2.json', 'r') as json_file_2:
-#     image_data_2 = json.load(json_file_2)
-
-# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2_3.json', 'r') as json_file_3:
-#     image_data_3 = json.load(json_file_3)
-
-# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/dataset/dic_dataset_new2_4.json', 'r') as json_file_4:
-#     image_data_4 = json.load(json_file_4)
-
-with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/dic_dataset1_chebyshev_no_margins.json' , 'r') as json_file_5:
-    image_data_5 = json.load(json_file_5)
-
-# image_data.update(image_data_2)
-# image_data.update(image_data_3)
-# image_data.update(image_data_4)
-
-image_data = image_data_5
-
-print("Length of image data after merging:",len(image_data))
+with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/yojana/dic_yojana_chebyshev_no_margins.json', 'r') as json_file:
+    image_data = json.load(json_file)
 
 # Get the list of image files in the folder
 image_files = [f for f in os.listdir(IMAGE_FOLDER) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif','.tif'))]
 image_files_json = image_data.keys()
 
 #add png extension to image_files_json
-image_files_json = [f+'.jpg' for f in image_files_json]
+image_files_json = [f+'.png' for f in image_files_json]
 print("Image files json:",len(image_files_json))
 
 #find common images between image_files and image_files_json
@@ -53,7 +33,8 @@ print("Common images:",len(list(common_images)))
 #sort image files
 # image_files.sort()
 #sort strings based on numeric values
-common_images.sort(key=lambda x: int(x.split('.')[0]))
+# common_images.sort(key=lambda x: int(x.split('.')[0]))
+common_images.sort(key=lambda x: (x.split('.')[0]))
 image_files = common_images
 
 total_images = len(image_files)
@@ -74,8 +55,10 @@ def show_image(image_index):
     if 0 <= image_index < total_images:
         current_image = image_files[image_index]
         # image_path = 'images/subsubset/' + current_image
-        image_path = 'images/Pagg/Dataset/Dataset/' + current_image
+        # image_path = 'images/Pagg/Dataset/Dataset/' + current_image
         # image_path = 'images/selected/' + current_image
+        # image_path = 'images/Pagg/Prima/' + current_image
+        image_path = 'images/Pagg/yojana/' + current_image
         return render_template('index.html', image_path=image_path, current_image=current_image, image_files=image_files)
     else:
         return "Invalid image index"
@@ -124,7 +107,6 @@ def conn_image(image_index):
 
 @app.route('/para_image_1/<int:image_index>')
 def para_image_1(image_index):
-    
     if 0 <= image_index < total_images:
         current_image = image_files[image_index]
         current_image_sp = image_files[image_index].split('.')[0]
@@ -142,9 +124,9 @@ def para_image_1(image_index):
         # target_components = image_data.get(current_image_sp,{}).get('paragraph',{}).get('target_components')
         
         image_with_para = para_2(image, component_df)
-        print("Image with para:",image_with_para)
         if image_with_para is None:
             return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
+
         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
 
@@ -154,7 +136,7 @@ def para_image_1(image_index):
         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
         
         #return render_template('conn_image.html', image_path=temp_output_path)
-        return render_template('index.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files, error_message=None)
+        return render_template('index.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files)
 
     else:
     
@@ -162,6 +144,7 @@ def para_image_1(image_index):
         print("Invalid image index")
         return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
     
+
 @app.route('/para_image_2/<int:image_index>')
 def para_image_2(image_index):
     if 0 <= image_index < total_images:
@@ -234,6 +217,42 @@ def para_image_3(image_index):
     
 
 # @app.route('/final_order/<int:image_index>')
+# def final_order(image_index):
+#     if 0 <= image_index < total_images:
+#         current_image = image_files[image_index]
+#         current_image_sp = image_files[image_index].split('.')[0]
+#         print("CI:",current_image)
+#         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
+        
+#         image = load_image(image_path)
+
+#         component_df = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('new'))
+#         euclidean_df_2 = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('euclidean'))
+
+#         # euclidean_data = image_data.get(current_image_sp, {}).get('reading_order', {}).get('new_euclidean')
+#         # euclidean_df = pd.DataFrame(euclidean_data)
+        
+#         header_p = 10
+#         footer_p = 10
+#         # image_with_para,_ = reading_order_with_line(image,euclidean_df, header_p, footer_p)
+#         image_with_para = get_coordinates_from_component(component_df, euclidean_df_2,image)
+
+#         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
+#         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
+
+#         temp_output_path = os.path.join(output_folder, 'output_final_order_image.jpg')
+#         cv2.imwrite(temp_output_path, image_with_para)
+        
+#         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
+        
+#         #return render_template('conn_image.html', image_path=temp_output_path)
+#         return render_template('index.html', current_image=current_image, image_path='/images/output_images/output_final_order_image.jpg', image_files=image_files)
+
+#     else:
+    
+#         # return "Invalid image index"
+#         print("Invalid image index")
+#         return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
 @app.route('/final_order')
 def final_order():
     image_index = request.args.get('image_index', type=int)
@@ -288,7 +307,6 @@ def final_order():
         print("Invalid image index")
         return render_template("index.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
 
-
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",debug=True, port=5000)
+    app.run(host="0.0.0.0",debug=True, port=5005)
 
