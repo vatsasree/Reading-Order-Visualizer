@@ -274,7 +274,9 @@ def sort_words(boxes, image): #from Krishna Tulsyan's code
     return lines
 
 
-def get_coordinates_from_component(component_df, boxes_df, image_file):
+def get_coordinates_from_component(component_df, boxes_df, image_file, attributes):
+
+    (font_size, font_thickness, box_thickness, line_thickness) = attributes
     # image = cv2.imread(image_file)
     image = cv2.cvtColor(image_file, cv2.COLOR_BGR2RGB)
     order = 0
@@ -303,8 +305,8 @@ def get_coordinates_from_component(component_df, boxes_df, image_file):
                 order += 1
                 center = ((box[0] + box[2]) // 2, (box[1] + box[3]) // 2)  # Calculate the center of the box
                 centers.append(center)  # Add the center to the list
-                cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), 2)
-                cv2.putText(image, str(order), (box[0], box[1] - 0), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1)
+                cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), box_thickness)
+                cv2.putText(image, str(order), (box[0], box[1] - 0), cv2.FONT_HERSHEY_SIMPLEX, font_size, (255, 0, 0), font_thickness)
 
                 # Update the Order column in boxes_df with the current order value
                 #box_id = get_box_id_from_coordinates(boxes_df, box)
@@ -313,9 +315,69 @@ def get_coordinates_from_component(component_df, boxes_df, image_file):
 
     # Draw a line between each pair of consecutive centers
     for i in range(1, len(centers)):
-        cv2.line(image, centers[i - 1], centers[i], (0, 0, 255), thickness=2)
+        cv2.line(image, centers[i - 1], centers[i], (0, 0, 255), line_thickness)
 
     #boxes_df = boxes_df.sort_values(by='Order')
     #boxes_df.to_csv('//home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/boxes_df.csv', index=False)  
     # return boxes_df
     return image
+
+def page_size(image_file):
+    image = cv2.imread(image_file)
+    height, width, _ = image.shape
+    return height, width
+
+# def ignore_margins(component, width_p, header, footer, image_file):
+#     height, width = page_size(image_file)
+#     top_margin = height*(header/100)
+#     bottom_margin = height*(footer/100)
+#     # left_margin = width*(left_m/100)
+#     # right_margin = width*(right_m/100)
+#     # vertical_margin = height*(height_p/100)
+#     horizontal_margin = width*(width_p/100)
+#     # for i in range(len(component)):
+#     #     if((component['Top'][i][1] > height - vertical_margin) and len(component['Component'][i][0])<7):
+#     #         component = component.drop(i)
+#     #     elif((component['Bottom'][i][1] < vertical_margin) and len(component['Component'][i][0])<7):
+#     #         component = component.drop(i)
+#     #     elif(component['Right'][i][0] < horizontal_margin):
+#     #         component = component.drop(i)
+#     #     elif(component['Left'][i][0] > width - horizontal_margin):
+#     #         component = component.drop(i)
+#     #     else:
+#     #         continue
+#     for i in range(len(component)):
+#         print(component['Top'][i][1])
+#         if((component['Top'][i][1] < (top_margin)) and len(component['Component'][i][0])<10):
+#             # component = component.drop(i)
+#             component = component.drop(i)
+#         # elif((component['Bottom'][i][1] > (height - bottom_margin)) and len(component['Component'][i][0])<10):
+#         #     component = component.drop(i)
+#         elif((component['Top'][i][1] > (height - bottom_margin)) and len(component['Component'][i][0])<10):
+#             component = component.drop(i)
+#         elif(component['Right'][i][0] < horizontal_margin):
+#             component = component.drop(i)
+#         elif(component['Left'][i][0] > width - horizontal_margin):
+#             component = component.drop(i)
+#         else:
+#             continue
+#     return component
+
+def ignore_margins(component, width_p, header, footer, image_file):
+    height, width = page_size(image_file)
+    top_margin = height * (header / 100)
+    bottom_margin = height * (footer / 100)
+    horizontal_margin = width * (width_p / 100)
+
+    # Create a boolean mask based on the conditions
+    mask = (
+        (component['Top'].apply(lambda x: x[1]) >= top_margin) &
+        (component['Top'].apply(lambda x: x[1]) <= (height - bottom_margin)) &
+        (component['Right'].apply(lambda x: x[0]) >= horizontal_margin) &
+        (component['Left'].apply(lambda x: x[0]) <= (width - horizontal_margin))
+    )
+
+    # Filter the DataFrame based on the mask
+    filtered_component = component[mask]
+
+    return filtered_component.reset_index(drop=True)
