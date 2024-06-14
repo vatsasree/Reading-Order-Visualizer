@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Order Visualizer</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        crossorigin="anonymous">
+
+    <!-- styles -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zoomist@2/zoomist.css" />
+
+    <!-- scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/zoomist@2/zoomist.umd.js"></script>
+
+</head>
+
+<style>
+    /* make img center within image-container */
+    #image-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #image-container>img {
+        height: 80vh;
+    }
+</style>
+
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-6">
+                <h1 class="mb-4">Reading Order Visualizer</h1>
+
+                <!-- Dropdown to select an image -->
+                <form method="get" action="{{ url_for('index') }}" class="mb-3">
+                    <label for="image-selector" class="form-label">Select an image:</label>
+                    <select id="image-selector" name="image_index" class="form-select">
+                        {% for image in image_files %}
+                        <option value="{{ image_files.index(image) }}" {% if image==current_image %}selected{% endif %}>
+                            {{ image
+                            }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <input type="submit" value="View" class="btn btn-primary">
+                </form>
+
+                <div class="navigation-buttons mb-3">
+                    {% if current_image %}
+                        <a href="{{ url_for('prev_image', image_index=image_files.index(current_image)) }}"
+                            class="btn btn-secondary">Previous</a>
+                        <a href="{{ url_for('next_image', image_index=image_files.index(current_image)) }}"
+                            class="btn btn-secondary">Next</a>
+                    {% endif %}
+                </div>
+
+                <form>
+                    <label>
+                        <input {{ 'checked' if 'para' not in request.url and 'conn' not in request.url else '' }}
+                        type="radio" name="view_option" value="paragraph"
+                        {% if current_image %}
+                            onclick="window.location.href='{{ url_for('index', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                            <!--img src="/static/orig.png" alt="View Original" width="50px"-->
+                        <span>View Original </span>
+                    </label>
+                
+                    <label>
+                        <input {{ 'checked' if 'conn' in request.url else '' }}
+                        type="radio" name="view_option" value="connections"
+                        {%if current_image %}    
+                            onclick="window.location.href='{{ url_for('conn_image', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                               <!--img src="/static/conn.png" alt="View Connections" width="50px"-->
+                        <span>View Connections </span>
+                    </label>
+                
+                    <label>
+                        <input {{ 'checked' if 'para_image_1' in request.url else '' }}
+                        type="radio" name="view_option" value="paragraph"
+                        {% if current_image %} 
+                            onclick="window.location.href='{{ url_for('para_image_1', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                               <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
+                        <span>View Paragraph Before Pinp</span>
+                    </label>
+
+                    <label>
+                        <input {{ 'checked' if 'para_image_2' in request.url else '' }}
+                        type="radio" name="view_option" value="paragraph"
+                        {% if current_image %}
+                            onclick="window.location.href='{{ url_for('para_image_2', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                               <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
+                        <span>View Paragraph After pinp not ordered </span>
+                    </label>
+
+                    <label>
+                        <input {{ 'checked' if 'para_image_3' in request.url else '' }}
+                        type="radio" name="view_option" value="paragraph"
+                        {% if current_image%}
+                            onclick="window.location.href='{{ url_for('para_image_3', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                               <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
+                        <span>View Paragraph after pinp ordered</span>
+                    </label>
+
+                    <label>
+                        <input {{ 'checked' if 'order' in request.url else '' }}
+                        type="radio" name="view_option" value="final_order"
+                        {% if current_image %}       
+                            onclick="window.location.href='{{ url_for('final_orderr', image_index=image_files.index(current_image)) }}'">
+                        {% else %}
+                            disabled>
+                        {% endif %}
+                            <!--img src="/static/para.png" alt="View Paragraph" width="50px"-->
+                        <span>View Final Reading Order </span>
+                    </label>
+                </form>
+
+                
+                <form method="get" action="{{ url_for('final_orderr') }}">
+                    <div class="mb-3">
+                        <a class="btn btn-primary" data-bs-toggle="collapse" href="#ignoreMargins" role="button" aria-expanded="false" aria-controls="ignoreMargins">
+                            Advanced Options
+                        </a>
+                        <div class="collapse" id="ignoreMargins">
+                            <div class="card card-body">
+                                <p><i>Advanced Options works only for Viewing Final Reading Order</i></p>
+                                <h4><p><b>Ignore Margins</b></p></h4>
+                
+                                <label for="header-input" class="form-label">Header:</label>
+                                <input type="number" id="header-input" name="header_p" class="form-control form-control-sm" style="width: 100px;" required value="{{ request.args.get('header_p', 0) }}">
+                
+                                <label for="footer-input" class="form-label">Footer:</label>
+                                <input type="number" id="footer-input" name="footer_p" class="form-control form-control-sm" style="width: 100px;" required value="{{ request.args.get('footer_p', 0) }}">
+                
+                                <label for="width-input" class="form-label">Width:</label>
+                                <input type="number" id="width-input" name="width_p" class="form-control form-control-sm" style="width: 100px;" required value="{{ request.args.get('width_p', 0) }}">
+                                
+                                <h4><p><b>Display Parameters</b></p></h4>
+                
+                                <label for="font-size-input" class="form-label">Font Size: <i>default=0.6</i></label>
+                                <input type="number" step="0.1" id="font-size-input" name="font_size" class="form-control form-control-sm" style="width: 100px;" required value="{{ request.args.get('font_size', 0.6) }}">
+                
+                                <label for="font-thickness-input" class="form-label">Font Thickness: <i>default=1</i></label>
+                                <input type="number" id="font-thickness-input" name="font_thickness" class="form-control form-control-sm" style="width: 100px;" required value="{{ request.args.get('font_thickness', 1) }}">
+                
+                                <label for="box-thickness-input" class="form-label">Box Thickness: <i>default=2</i></label>
+                                <input type="number" id="box-thickness-input" name="box_thickness" class="form-control form-control-sm" style="width: 100px;" required value="{{ request.args.get('box_thickness', 2) }}">
+                
+                                <label for="line-thickness-input" class="form-label">Line Thickness: <i>default=2</i></label>
+                                <input type="number" id="line-thickness-input" name="line_thickness" class="form-control form-control-sm" style="width: 100px;" required value="{{ request.args.get('line_thickness', 2) }}">
+                            </div>
+                            <input type="hidden" name="image_index" value="{{ image_files.index(current_image) }}">
+                            <input type="submit" value="Submit" class="btn btn-primary">
+                        </div>
+                        
+                    </div>
+                </form>
+                
+                <form method="get" action="{{ url_for('save_csv_good_bad') }}">
+                    <div class="mb-3">
+                        <div class="card card-body">
+                            <label>
+                                <input type="radio" id="good" name="classification" value="good" {% if classification == 'good' %}checked{% endif %}>
+                                <label for="good">GOOD</label>
+                            </label>
+                            <label>
+                                <input type="radio" id="bad" name="classification" value="bad" {% if classification == 'bad' %}checked{% endif %}>
+                                <label for="bad">BAD</label>
+                            </label>
+                        </div>
+                        <input type="hidden" name="image_index" value="{{ image_files.index(current_image) }}">
+                        <input type="hidden" name="classification" value="{{ request.args.get('classification', default='bad') }}">
+                        <input type="submit" value="Submit" class="btn btn-primary">
+                        
+                        {% if message %}
+                            <p>{{ message }}</p>
+                        {% endif %}
+                    </div>
+                </form>
+                
+
+                
+            </div>
+            <div class="col-6"><!-- Display the selected image -->
+                <!-- custom slider -->
+                <div class="custom-zoomist-slider"></div>
+                <!-- zoomist-container -->
+                <div class="zoomist-container">
+                    <!-- zoomist-wrapper is required -->
+                    <div class="zoomist-wrapper">
+                        <!-- zoomist-image is required -->
+                        <div class="zoomist-image">
+                            <!-- you can add anything you want to zoom here. -->
+                            <!-- div id="image-container" -->
+                            <div id="image-container" style="display: flex; justify-content: center; align-items: center; height: 100%;">
+                                {% if error_message %}
+                                    <p style="text-align: center;">{{ error_message }}</p>
+                                {% else %}
+                                    <img src="{{ url_for('static', filename=image_path) }}" alt="Current Image"
+                                        class="img-fluid">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <script>
+            const zoomist = new Zoomist('.zoomist-container',
+                // Optional parameters
+                {
+                    maxScale: 4,
+                    bounds: true,
+                    // if you need slider
+                    slider: true,
+                    // if you need zoomer
+                    zoomer: true,
+                    on: {
+                        update(zoomist) {
+                            console.log(zoomist)
+                        }
+                    },
+                }
+            );
+        </script>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+        ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"
+        ></script>
+</body>
+
+</html>

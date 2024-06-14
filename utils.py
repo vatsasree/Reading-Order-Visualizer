@@ -1,4 +1,5 @@
 import cv2
+import os 
 
 def conn(image, euclidean):
 
@@ -274,16 +275,17 @@ def sort_words(boxes, image): #from Krishna Tulsyan's code
     return lines
 
 
-def get_coordinates_from_component(component_df, boxes_df, image_file, attributes):
+def get_coordinates_from_component(component_df, boxes_df, image_file, image_path, attributes):
 
     (font_size, font_thickness, box_thickness, line_thickness) = attributes
     # image = cv2.imread(image_file)
+    image_file_name = image_path.split('/')[-1].split('.')[0]
     image = cv2.cvtColor(image_file, cv2.COLOR_BGR2RGB)
     order = 0
     c = 0
     centers = []  # List to store the centers of the boxes
-    # boxes_df.loc[:,'Visited'] = 0
-    # boxes_df.loc[:,'Order'] = -1
+    boxes_df.loc[:,'Visited'] = 0
+    boxes_df.loc[:,'Order'] = -1
     for index, row in component_df.iterrows():
         c += 1
         coordinates = []
@@ -299,7 +301,7 @@ def get_coordinates_from_component(component_df, boxes_df, image_file, attribute
             cc+=1
             for i, box in enumerate(line):
                 # print(box)
-                # box_id = get_box_id_from_coordinates(boxes_df, box)
+                box_id = get_box_id_from_coordinates(boxes_df, box)
 
                 # if boxes_df.at[box_id, 'Visited'] == 0:
                 order += 1
@@ -310,17 +312,88 @@ def get_coordinates_from_component(component_df, boxes_df, image_file, attribute
 
                 # Update the Order column in boxes_df with the current order value
                 #box_id = get_box_id_from_coordinates(boxes_df, box)
-                #boxes_df.at[box_id, 'Order'] = order
-                #boxes_df.at[box_id, 'Visited'] = 1
+                boxes_df.at[box_id, 'Order'] = order
+                boxes_df.at[box_id, 'Visited'] = 1
 
     # Draw a line between each pair of consecutive centers
     for i in range(1, len(centers)):
         cv2.line(image, centers[i - 1], centers[i], (0, 0, 255), line_thickness)
 
+    # os.makedirs('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv', exist_ok=True)
+    # boxes_df.to_csv("/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv/csv_{}.csv".format(image_file_name))      
+    
     #boxes_df = boxes_df.sort_values(by='Order')
     #boxes_df.to_csv('//home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/boxes_df.csv', index=False)  
     # return boxes_df
     return image
+
+
+def save_csv(component_df, boxes_df, image_file, image_path, attributes,feedback):
+
+    (font_size, font_thickness, box_thickness, line_thickness) = attributes
+    # image = cv2.imread(image_file)
+    image_file_name = image_path.split('/')[-1].split('.')[0]
+    image = cv2.cvtColor(image_file, cv2.COLOR_BGR2RGB)
+    order = 0
+    c = 0
+    centers = []  # List to store the centers of the boxes
+    boxes_df.loc[:,'Visited'] = 0
+    boxes_df.loc[:,'Order'] = -1
+    for index, row in component_df.iterrows():
+        c += 1
+        coordinates = []
+        box_ids = row['Component'][0]
+        for box_id in box_ids:
+            coordinates.append(get_TLBR_from_CSV(boxes_df.iloc[box_id]))
+
+        sorted_coordinates_y = sorted(coordinates, key=sort_boxesy)
+        sorted_coos = sort_words(sorted_coordinates_y, image)
+
+        cc=0
+        for line in sorted_coos:
+            cc+=1
+            for i, box in enumerate(line):
+                # print(box)
+                box_id = get_box_id_from_coordinates(boxes_df, box)
+
+                # if boxes_df.at[box_id, 'Visited'] == 0:
+                order += 1
+                center = ((box[0] + box[2]) // 2, (box[1] + box[3]) // 2)  # Calculate the center of the box
+                centers.append(center)  # Add the center to the list
+                # cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), box_thickness)
+                # cv2.putText(image, str(order), (box[0], box[1] - 0), cv2.FONT_HERSHEY_SIMPLEX, font_size, (255, 0, 0), font_thickness)
+
+                # Update the Order column in boxes_df with the current order value
+                #box_id = get_box_id_from_coordinates(boxes_df, box)
+                boxes_df.at[box_id, 'Order'] = order
+                boxes_df.at[box_id, 'Visited'] = 1
+
+    # Draw a line between each pair of consecutive centers
+    # for i in range(1, len(centers)):
+    #     cv2.line(image, centers[i - 1], centers[i], (0, 0, 255), line_thickness)
+
+    output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv'  # Modify this path as per your requirement
+    if feedback == 'good':
+        output_folder = os.path.join(output_folder, 'good')
+        message = 'CSV saved as GOOD'
+    elif feedback == 'bad':
+        output_folder = os.path.join(output_folder, 'bad')
+        message = "CSV saved as BAD"
+
+    os.makedirs(output_folder, exist_ok=True)
+    csv_output_path = os.path.join(output_folder, f'{image_file_name}_boxes.csv')
+    boxes_df.to_csv(csv_output_path, index=False)
+
+    # os.makedirs('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv', exist_ok=True)
+    # boxes_df.to_csv("/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv/csv_{}.csv".format(image_file_name))      
+    
+    #boxes_df = boxes_df.sort_values(by='Order')
+    #boxes_df.to_csv('//home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/boxes_df.csv', index=False)  
+    # return boxes_df
+
+    return boxes_df, message
+
+    
 
 def page_size(image_file):
     image = cv2.imread(image_file)
