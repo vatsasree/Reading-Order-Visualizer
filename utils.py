@@ -202,16 +202,35 @@ def reading_order_with_line(image, euclidean, header_p, footer_p):
 
 #New idea of getting word reading order by sorting the words from left to right and top to bottom
 
+# def get_box_id_from_coordinates(boxes_df, box_coordinates):
+#     """Get the index of the box in boxes_df based on its coordinates."""
+#     x1,y1,x2,y2 = box_coordinates
+#     for index, row in boxes_df.iterrows():
+#         if (int(row['Top'][1]) == int(y1) and
+#             int(row['Left'][0]) == int(x1) and
+#             int(row['Bottom'][1]) == int(y2) and
+#             int(row['Right'][0]) == int(x2)):
+#             return index
+#     return None
+
 def get_box_id_from_coordinates(boxes_df, box_coordinates):
     """Get the index of the box in boxes_df based on its coordinates."""
-    x1,y1,x2,y2 = box_coordinates
-    for index, row in boxes_df.iterrows():
-        if (int(row['Top'][1]) == int(y1) and
-            int(row['Left'][0]) == int(x1) and
-            int(row['Bottom'][1]) == int(y2) and
-            int(row['Right'][0]) == int(x2)):
-            return index
-    return None
+    x1, y1, x2, y2 = box_coordinates
+    
+    # Create a boolean mask for the conditions
+    mask = (
+        (boxes_df['Top'].apply(lambda x: int(x[1])) == int(y1)) &
+        (boxes_df['Left'].apply(lambda x: int(x[0])) == int(x1)) &
+        (boxes_df['Bottom'].apply(lambda x: int(x[1])) == int(y2)) &
+        (boxes_df['Right'].apply(lambda x: int(x[0])) == int(x2))
+    )
+    
+    # Find the index of the first True value in the mask
+    result = boxes_df.index[mask]
+    
+    # Return the first matching index or None if no match is found
+    return result[0] if not result.empty else None
+
 
 def get_TLBR_from_CSV(df):
     top = df['Top']
@@ -260,8 +279,8 @@ def sort_words(boxes, image): #from Krishna Tulsyan's code
 
 
     for box in boxes:
-        # if box[1] > current_line + mean_height:
-        if box[1] >= current_line + (median_height/2):
+        if box[1] > current_line + (mean_height*0.75):
+        # if box[1] >= current_line + (median_height/2):
             lines.append(tmp_line)
             tmp_line = [box]
             current_line = box[1]
@@ -277,7 +296,7 @@ def sort_words(boxes, image): #from Krishna Tulsyan's code
 
 def get_coordinates_from_component(component_df, boxes_df, image_file, image_path, attributes):
 
-    (font_size, font_thickness, box_thickness, line_thickness) = attributes
+    (font_size, order_font_size, font_thickness, box_thickness, line_thickness) = attributes
     # image = cv2.imread(image_file)
     image_file_name = image_path.split('/')[-1].split('.')[0]
     image = cv2.cvtColor(image_file, cv2.COLOR_BGR2RGB)
@@ -309,6 +328,9 @@ def get_coordinates_from_component(component_df, boxes_df, image_file, image_pat
                 centers.append(center)  # Add the center to the list
                 cv2.rectangle(image, (box[0], box[1]), (box[2], box[3]), (0, 255, 0), box_thickness)
                 cv2.putText(image, str(order), (box[0], box[1] - 0), cv2.FONT_HERSHEY_SIMPLEX, font_size, (255, 0, 0), font_thickness)
+                #display box ID on the image
+                # order_font_size=0
+                cv2.putText(image, str(box_id), ((box[2]+box[0])//2, box[1] ), cv2.FONT_HERSHEY_SIMPLEX, order_font_size, (0, 0, 255), font_thickness)
 
                 # Update the Order column in boxes_df with the current order value
                 #box_id = get_box_id_from_coordinates(boxes_df, box)
@@ -328,11 +350,24 @@ def get_coordinates_from_component(component_df, boxes_df, image_file, image_pat
     return image
 
 
-def save_csv(component_df, boxes_df, image_file, image_path, attributes,feedback):
+def save_csv_and_metadata(component_df, boxes_df, image_file, image_path, attributes,feedback, doc_category, percents_to_ignore):
 
-    (font_size, font_thickness, box_thickness, line_thickness) = attributes
-    # image = cv2.imread(image_file)
     image_file_name = image_path.split('/')[-1].split('.')[0]
+    image_file_name_with_ext = image_path.split('/')[-1]
+    (font_size, font_thickness, box_thickness, line_thickness) = attributes
+    
+    #saving percents_to_ignore as a doc_category jsonline file
+    (header_p, footer_p, width_p) = percents_to_ignore
+    percents_to_ignore = {'file_name':image_file_name_with_ext,'header': header_p, 'footer': footer_p, 'width': width_p}
+    
+    import os
+    import jsonlines
+    os.makedirs(f'/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/metadata', exist_ok=True)
+    with jsonlines.open(f'/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/metadata/{doc_category}.jsonl', mode='a') as writer:
+        writer.write(percents_to_ignore)
+        
+    # image = cv2.imread(image_file)
+    
     image = cv2.cvtColor(image_file, cv2.COLOR_BGR2RGB)
     order = 0
     c = 0
@@ -381,7 +416,7 @@ def save_csv(component_df, boxes_df, image_file, image_path, attributes,feedback
         message = "CSV saved as BAD"
 
     os.makedirs(output_folder, exist_ok=True)
-    csv_output_path = os.path.join(output_folder, f'{image_file_name}_boxes.csv')
+    csv_output_path = os.path.join(output_folder, f'{image_file_name}_{doc_category}_boxes.csv')
     boxes_df.to_csv(csv_output_path, index=False)
 
     # os.makedirs('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv', exist_ok=True)
