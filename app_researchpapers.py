@@ -5,21 +5,19 @@ import json
 import cv2
 import pandas as pd
 import numpy as np
-from flask import flash, redirect
 
 app = Flask(__name__)
 
 # Specify the path to the folder containing your images
 # IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Pagg/Dataset/Dataset'
 # IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/selected'
-# IMAGE_FOLDER = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Pagg/Prima"
-IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Pagg/doclaynet'
+IMAGE_FOLDER = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Pagg/researchpapers"
 app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
 
 # Load the JSON data
-# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/doclaynet/dic_doclaynet_chebyshev_no_margins_yolo.json', 'r') as json_file:
-with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/temp_jsonsfromada/dic_doclaynet_chebyshev_no_margins_yolo.json','r') as json_file:
-# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/temp_jsonsfromada/dic_doclaynet_chebyshev_no_margins_yolo_improved_10docs.json','r') as json_file:
+with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/jsons/researchpapers/dic_rp_chebyshev_no_margins_yolo.json', 'r') as json_file:
+# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/temp_jsonsfromada/improved/dic_rp_chebyshev_no_margins_yolo_immproved_32docs.json', 'r') as json_file:
+# with open('/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/temp_jsonsfromada/dic_rp_chebyshev_no_margins_yolo_immproved_1_ppocr1docs.json','r') as json_file:
     image_data = json.load(json_file)
 
 # Get the list of image files in the folder
@@ -37,7 +35,8 @@ print("Common images:",len(list(common_images)))
 #sort image files
 # image_files.sort()
 #sort strings based on numeric values
-common_images.sort(key=lambda x: int(x.split('.')[0]))
+# common_images.sort(key=lambda x: int(x.split('.')[0]))
+common_images.sort(key=lambda x: (x.split('.')[0]))
 image_files = common_images
 
 total_images = len(image_files)
@@ -59,8 +58,11 @@ def show_image(image_index):
         current_image = image_files[image_index]
         # image_path = 'images/subsubset/' + current_image
         # image_path = 'images/Pagg/Dataset/Dataset/' + current_image
-        image_path = '/images/Pagg/doclaynet/' + current_image
-        return render_template('index_final.html', image_path=image_path, current_image=current_image, image_files=image_files)
+        # image_path = 'images/selected/' + current_image
+        # image_path = 'images/Pagg/Prima/' + current_image
+        # image_path = 'images/Pagg/yojana/' + current_image
+        image_path = 'images/Pagg/researchpapers/' + current_image
+        return render_template('index_rp.html', image_path=image_path, current_image=current_image, image_files=image_files)
     else:
         return "Invalid image index"
 
@@ -97,13 +99,13 @@ def conn_image(image_index):
         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
 
         #return render_template('conn_image.html', image_path=temp_output_path)
-        return render_template('index_final.html', current_image=current_image, image_path='/images/output_images/output_conn_image.jpg', image_files=image_files)
+        return render_template('index_rp.html', current_image=current_image, image_path='/images/output_images/output_conn_image.jpg', image_files=image_files)
 
     else:
     
         # return "Invalid image index"
         print("Invalid image index")
-        return render_template("index_final.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+        return render_template("index_rp.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
 
 
 @app.route('/para_image_1/<int:image_index>')
@@ -125,9 +127,8 @@ def para_image_1(image_index):
         # target_components = image_data.get(current_image_sp,{}).get('paragraph',{}).get('target_components')
         
         image_with_para = para_2(image, component_df)
-
         if image_with_para is None:
-            return render_template("index_final.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
+            return render_template("index_rp.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
 
         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
@@ -138,13 +139,13 @@ def para_image_1(image_index):
         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
         
         #return render_template('conn_image.html', image_path=temp_output_path)
-        return render_template('index_final.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files)
+        return render_template('index_rp.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files)
 
     else:
     
         # return "Invalid image index"
         print("Invalid image index")
-        return render_template("index_final.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+        return render_template("index_rp.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
     
 
 @app.route('/para_image_2/<int:image_index>')
@@ -162,9 +163,8 @@ def para_image_2(image_index):
         component_df = pd.DataFrame(component_data)
         
         image_with_para = para_2(image, component_df)
-
         if image_with_para is None:
-            return render_template("index_final.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
+            return render_template("index_rp.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
 
         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
@@ -175,13 +175,13 @@ def para_image_2(image_index):
         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
         
         #return render_template('conn_image.html', image_path=temp_output_path)
-        return render_template('index_final.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files)
+        return render_template('index_rp.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files)
 
     else:
     
         # return "Invalid image index"
         print("Invalid image index")
-        return render_template("index_final.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+        return render_template("index_rp.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
     
 
 @app.route('/para_image_3/<int:image_index>')
@@ -197,11 +197,9 @@ def para_image_3(image_index):
         component_data = image_data.get(current_image_sp, {}).get('paragraph_after_pinp_ordered', {}).get('component')
         component_df = pd.DataFrame(component_data)
         
-        #<function to ignore header and footers>
         image_with_para = para_2(image, component_df)
-
         if image_with_para is None:
-            return render_template("index_final.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
+            return render_template("index_rp.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
 
         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
@@ -212,13 +210,13 @@ def para_image_3(image_index):
         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
         
         #return render_template('conn_image.html', image_path=temp_output_path)
-        return render_template('index_final.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files)
+        return render_template('index_rp.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files)
 
     else:
     
         # return "Invalid image index"
         print("Invalid image index")
-        return render_template("index_final.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+        return render_template("index_rp.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
     
 
 # @app.route('/final_order/<int:image_index>')
@@ -240,7 +238,6 @@ def para_image_3(image_index):
 #         header_p = 10
 #         footer_p = 10
 #         # image_with_para,_ = reading_order_with_line(image,euclidean_df, header_p, footer_p)
-#         #<function to ignore header and footer>
 #         image_with_para = get_coordinates_from_component(component_df, euclidean_df_2,image)
 
 #         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
@@ -252,13 +249,13 @@ def para_image_3(image_index):
 #         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
         
 #         #return render_template('conn_image.html', image_path=temp_output_path)
-#         return render_template('index_final.html', current_image=current_image, image_path='/images/output_images/output_final_order_image.jpg', image_files=image_files)
+#         return render_template('index_rp.html', current_image=current_image, image_path='/images/output_images/output_final_order_image.jpg', image_files=image_files)
 
 #     else:
     
 #         # return "Invalid image index"
 #         print("Invalid image index")
-#         return render_template("index_final.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+#         return render_template("index_rp.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
 @app.route('/final_order')
 def final_orderr():
     image_index = request.args.get('image_index', type=int)
@@ -309,7 +306,7 @@ def final_orderr():
         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
         
         #return render_template('conn_image.html', image_path=temp_output_path)
-        return render_template('index_final.html', current_image=current_image, image_path='/images/output_images/output_final_order_image.jpg', image_files=image_files,header_p=header_p,
+        return render_template('index_rp.html', current_image=current_image, image_path='/images/output_images/output_final_order_image.jpg', image_files=image_files,header_p=header_p,
                                footer_p=footer_p,
                                width_p=width_p,
                                font_size=font_size,
@@ -322,7 +319,7 @@ def final_orderr():
     
         # return "Invalid image index"
         print("Invalid image index")
-        return render_template("index_final.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+        return render_template("index_rp.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
 
 
 
@@ -385,7 +382,7 @@ def save_csv_good_bad():
         # relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
         
         #return render_template('conn_image.html', image_path=temp_output_path)
-        return render_template('index_final.html', current_image=current_image, image_path='/images/output_images/output_final_order_image.jpg', image_files=image_files,header_p=header_p,
+        return render_template('index_rp.html', current_image=current_image, image_path='/images/output_images/output_final_order_image.jpg', image_files=image_files,header_p=header_p,
                                footer_p=footer_p,
                                width_p=width_p,
                                font_size=font_size,
@@ -397,9 +394,8 @@ def save_csv_good_bad():
     
         # return "Invalid image index"
         print("Invalid image index")
-        return render_template("index_final.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
-
+        return render_template("index_rp.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",debug=True, port=5002)
+    app.run(host="0.0.0.0",debug=True, port=5003)
 
