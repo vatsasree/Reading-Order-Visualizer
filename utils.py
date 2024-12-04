@@ -489,3 +489,37 @@ def ignore_margins(component, width_p, header, footer, image_file):
     filtered_component = component[mask]
 
     return filtered_component.reset_index(drop=True)
+
+
+## new function to display gt from saved csv
+def display_gt(image, gt_df):
+    print('displaying gt', image)
+    image = cv2.imread(image)
+    for index, row in gt_df.iterrows():
+        # print(row['Left'], row['Top'] )
+        top_left = (int(row['Left'].split(',')[0][1:]), int(row['Top'].split(',')[1][:-1]))
+        bottom_right = (int(row['Right'].split(',')[0][1:]), int(row['Bottom'].split(',')[1][:-1])) 
+        # print(top_left, bottom_right)
+        
+        cv2.rectangle(image, top_left, bottom_right, (0, 255, 0), 1)
+        cv2.putText(image, str(row['Order']), (top_left[0], top_left[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 0, 0), 2)
+    
+    #sort df based on order and draw line between the boxes
+    # gt_df = gt_df.sort_values(by='Order')
+    # centers = []
+    # for index, row in gt_df.iterrows():
+    #     center = (int((row['Left'] + row['Right']) / 2), int((row['Top'] + row['Bottom']) / 2))
+    #     centers.append(center)
+    #     cv2.line(image, centers[index - 1], center, (0, 0, 255), 1)
+
+    return image
+
+def display_layout(img_path, f):
+    img = cv2.imread(img_path)
+    for key, value in f.items():
+        if img_path.split('/')[-1].split('.')[0] == key:
+            for k,v in value.items():
+                for i in v:
+                    cv2.rectangle(img, (int(i[0]), int(i[1])), (int(i[2]), int(i[3])), (0, 255, 0), 2)
+                    cv2.putText(img, k, (int(i[0]), int(i[1]) - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 1)
+    return img
