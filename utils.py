@@ -1,5 +1,7 @@
 import cv2
 import os 
+import pandas as pd
+import numpy as np
 
 def conn(image, euclidean):
 
@@ -362,8 +364,11 @@ def save_csv_and_metadata(component_df, boxes_df, image_file, image_path, attrib
     
     import os
     import jsonlines
-    os.makedirs(f'/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/metadata', exist_ok=True)
-    with jsonlines.open(f'/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/metadata/{doc_category}.jsonl', mode='a') as writer:
+    # os.makedirs(f'/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/metadata', exist_ok=True)
+    # with jsonlines.open(f'/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/metadata/{doc_category}.jsonl', mode='a') as writer:
+    #     writer.write(percents_to_ignore)
+    os.makedirs(f'/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/metadata_hisam', exist_ok=True)
+    with jsonlines.open(f'/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/metadata_hisam/{doc_category}.jsonl', mode='a') as writer:
         writer.write(percents_to_ignore)
         
     # image = cv2.imread(image_file)
@@ -407,7 +412,9 @@ def save_csv_and_metadata(component_df, boxes_df, image_file, image_path, attrib
     # for i in range(1, len(centers)):
     #     cv2.line(image, centers[i - 1], centers[i], (0, 0, 255), line_thickness)
 
-    output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv'  # Modify this path as per your requirement
+    # output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv'  # Modify this path as per your requirement
+    # output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv_hisam'  # Modify this path as per your requirement
+    output_folder = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv_hisam_new"
     if feedback == 'good':
         output_folder = os.path.join(output_folder, 'good')
         message = 'CSV saved as GOOD'
@@ -492,25 +499,38 @@ def ignore_margins(component, width_p, header, footer, image_file):
 
 
 ## new function to display gt from saved csv
-def display_gt(image, gt_df):
+def display_gt(image, gt_df, attributes):
+    header_p, footer_p, width_p, font_size, font_thickness, box_thickness, line_thickness = attributes
     print('displaying gt', image)
     image = cv2.imread(image)
-    for index, row in gt_df.iterrows():
-        # print(row['Left'], row['Top'] )
-        top_left = (int(row['Left'].split(',')[0][1:]), int(row['Top'].split(',')[1][:-1]))
-        bottom_right = (int(row['Right'].split(',')[0][1:]), int(row['Bottom'].split(',')[1][:-1])) 
-        # print(top_left, bottom_right)
+    # for index, row in gt_df.iterrows():
+    #     # print(row['Left'], row['Top'] )
+    #     top_left = (int(row['Left'].split(',')[0][1:]), int(row['Top'].split(',')[1][:-1]))
+    #     bottom_right = (int(row['Right'].split(',')[0][1:]), int(row['Bottom'].split(',')[1][:-1])) 
+    #     # print(top_left, bottom_right)
         
-        cv2.rectangle(image, top_left, bottom_right, (0, 255, 0), 1)
-        cv2.putText(image, str(row['Order']), (top_left[0], top_left[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 0, 0), 2)
+    #     cv2.rectangle(image, top_left, bottom_right, (0, 255, 0), 1)
+    #     cv2.putText(image, str(row['Order']), (top_left[0], top_left[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 0, 0), 2)
     
     #sort df based on order and draw line between the boxes
-    # gt_df = gt_df.sort_values(by='Order')
-    # centers = []
-    # for index, row in gt_df.iterrows():
-    #     center = (int((row['Left'] + row['Right']) / 2), int((row['Top'] + row['Bottom']) / 2))
-    #     centers.append(center)
-    #     cv2.line(image, centers[index - 1], center, (0, 0, 255), 1)
+    gt_df = gt_df.sort_values(by='Order')
+    centers = []
+    for index, row in gt_df.iterrows():
+        #left, right, top, bottom are coordinates of the edge centers of the boxes, get the center of the bbox
+        #ignore the box that has order = -1
+        if row['Order'] != -1:
+            left = int(row['Left'].split(',')[0][1:])
+            right = int(row['Right'].split(',')[0][1:])
+            top = int(row['Top'].split(',')[1][:-1])
+            bottom = int(row['Bottom'].split(',')[1][:-1])
+            center = (int((left + right) / 2), int((top + bottom) / 2))
+            cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), box_thickness)
+            cv2.putText(image, str(row['Order']), (left, top - 5), cv2.FONT_HERSHEY_SIMPLEX, font_size, (255, 0, 0), font_thickness)
+            centers.append(center)
+
+        #draw line between the centers
+    for i in range(1, len(centers)):
+        cv2.line(image, centers[i - 1], centers[i], (0, 0, 255), line_thickness)
 
     return image
 
@@ -523,3 +543,197 @@ def display_layout(img_path, f):
                     cv2.rectangle(img, (int(i[0]), int(i[1])), (int(i[2]), int(i[3])), (0, 255, 0), 2)
                     cv2.putText(img, k, (int(i[0]), int(i[1]) - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 1)
     return img
+
+def display_surya_layout(img_path, f):
+    img = cv2.imread(img_path)
+    for key, value in f.items():
+        if img_path.split('/')[-1].split('.')[0] == key:
+            bbox_list = []
+            for item in value[0]['bboxes']:
+                order = item['position']
+                label = item['label']
+                bbox = item['bbox']
+                bbox_list.append(bbox)
+                text = label + '--' + str(order)
+                cv2.rectangle(img, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (0, 255, 0), 2)
+                cv2.putText(img, str(text), (int(bbox[0]), int(bbox[1]) - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 1)
+            
+            #draw lines connecting centers of the boxes
+            for i in range(1, len(bbox_list)):
+                center1 = (int((bbox_list[i-1][0] + bbox_list[i-1][2])/2), int((bbox_list[i-1][1] + bbox_list[i-1][3])/2))
+                center2 = (int((bbox_list[i][0] + bbox_list[i][2])/2), int((bbox_list[i][1] + bbox_list[i][3])/2))
+                cv2.line(img, center1, center2, (0, 0, 255), 2)
+    return img
+
+def display_hisam_lines(img_path,f):
+    img = cv2.imread(img_path)
+    for key, value in f.items():
+        print(key)
+        if img_path.split('/')[-1] == key:
+            bbox_list = []
+            order = 0
+            for i in value:
+                bbox_list.append(i)
+                cv2.rectangle(img, (int(i[0]), int(i[1])), (int(i[2]), int(i[3])), (0, 255, 0), 2)
+                cv2.putText(img, str(order), (int(i[0]), int(i[1]) - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 1)
+                order += 1
+
+            # draw lines connecting centers of the boxes
+            # for i in range(1, len(bbox_list)):
+            #     center1 = (int((bbox_list[i - 1][0] + bbox_list[i - 1][2]) / 2), int((bbox_list[i - 1][1] + bbox_list[i - 1][3]) / 2))
+            #     center2 = (int((bbox_list[i][0] + bbox_list[i][2]) / 2), int((bbox_list[i][1] + bbox_list[i][3]) / 2))
+            #     cv2.line(img, center1, center2, (0, 0, 255), 2)
+
+    return img
+
+def display_hisam_paras(img_path,f):
+    img = cv2.imread(img_path)
+    for key, value in f.items():
+        # print(key)
+        if img_path.split('/')[-1] == key:
+            bbox_list = []
+            order = 0
+            for i in value:
+                bbox_list.append(i)
+                cv2.rectangle(img, (int(i[0]), int(i[1])), (int(i[2]), int(i[3])), (0, 255, 0), 2)
+                cv2.putText(img, str(order), (int(i[0]), int(i[1]) - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+                order += 1
+
+            # draw lines connecting centers of the boxes
+            # for i in range(1, len(bbox_list)):
+            #     center1 = (int((bbox_list[i - 1][0] + bbox_list[i - 1][2]) / 2), int((bbox_list[i - 1][1] + bbox_list[i - 1][3]) / 2))
+            #     center2 = (int((bbox_list[i][0] + bbox_list[i][2]) / 2), int((bbox_list[i][1] + bbox_list[i][3]) / 2))
+            #     cv2.line(img, center1, center2, (0, 0, 255), 2)
+
+    return img
+
+
+def display_hisam_newapproach_layout(img_path,f):
+    img = cv2.imread(img_path)
+    
+    layout_dic = f["layout"]["layout"]
+    for k,v in layout_dic.items():
+        for i in v:
+            cv2.rectangle(img, (int(i[0]), int(i[1])), (int(i[2]), int(i[3])), (0, 255, 0), 2)
+            cv2.putText(img, k, (int(i[0]), int(i[1]) - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 1)
+    return img
+
+
+def display_hisam_newapproach_boxes(img_path,f):
+    img = cv2.imread(img_path)
+
+    # filtered_paras = f["filtered_paras"]['paras']
+    filtered_paras = f
+    for i in filtered_paras:
+        print(i)
+        cv2.rectangle(img, (int(i[0]), int(i[1])), (int(i[2]), int(i[3])), (0, 255, 0), 2)
+    return img
+
+
+def display_hisam_newapproach_fparas(img_path,f):
+    img = cv2.imread(img_path)
+
+    filtered_paras = f["filtered_paras"]['paras']
+    for i in filtered_paras:
+        print(i)
+        cv2.rectangle(img, (int(i[0]), int(i[1])), (int(i[2]), int(i[3])), (0, 255, 0), 2)
+    return img
+
+def display_hisam_newapproach_sparas(img_path,f):
+    img = cv2.imread(img_path)
+    bbox_list = []
+    order = 0
+    filtered_paras = f["sorted_paras"]
+    for paras in filtered_paras:
+        for i in paras:
+            print(i)
+            bbox_list.append(i)
+            cv2.rectangle(img, (int(i[0]), int(i[1])), (int(i[2]), int(i[3])), (0, 255, 0), 2)
+            cv2.putText(img, str(order), (int(i[0]), int(i[1]) - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+            order+=1
+    for i in range(1, len(bbox_list)):
+        center1 = (int((bbox_list[i-1][0] + bbox_list[i-1][2])/2), int((bbox_list[i-1][1] + bbox_list[i-1][3])/2))
+        center2 = (int((bbox_list[i][0] + bbox_list[i][2])/2), int((bbox_list[i][1] + bbox_list[i][3])/2))
+        cv2.line(img, center1, center2, (0, 0, 255), 2)
+    return img
+
+def display_hisam_newapproach_lines_sorted(img_path,f):
+    img = cv2.imread(img_path)
+
+    filtered_paras = f["lines_sorted_per_para"]
+    print(filtered_paras)
+    bbox_list = []
+    order = 0
+    for paras in filtered_paras:
+        for i in paras:
+            print(i)
+            bbox_list.append(i)
+            cv2.rectangle(img, (int(i[0]), int(i[1])), (int(i[2]), int(i[3])), (0, 255, 0), 2)
+            cv2.putText(img, str(order), (int(i[0]), int(i[1]) - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+            order+=1
+    for i in range(1, len(bbox_list)):
+        center1 = (int((bbox_list[i-1][0] + bbox_list[i-1][2])/2), int((bbox_list[i-1][1] + bbox_list[i-1][3])/2))
+        center2 = (int((bbox_list[i][0] + bbox_list[i][2])/2), int((bbox_list[i][1] + bbox_list[i][3])/2))
+        cv2.line(img, center1, center2, (0, 0, 255), 2)
+    return img
+
+def display_hisam_newapproach_words_sorted(img_path,f):
+    img = cv2.imread(img_path)
+    order = 0
+    
+    filtered_paras = f["words_sorted_per_line"]
+    bbox_list = []
+    for paras in filtered_paras:
+        for i in paras:
+            # print(i)
+            bbox_list.append(i)
+            cv2.rectangle(img, (int(i[0]), int(i[1])), (int(i[2]), int(i[3])), (0, 255, 0), 1)
+            cv2.putText(img, str(order), (int(i[0]), int(i[1]) - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.2, (255, 0, 0), 1)
+            order+=1
+    for i in range(1, len(bbox_list)):
+        center1 = (int((bbox_list[i-1][0] + bbox_list[i-1][2])/2), int((bbox_list[i-1][1] + bbox_list[i-1][3])/2))
+        center2 = (int((bbox_list[i][0] + bbox_list[i][2])/2), int((bbox_list[i][1] + bbox_list[i][3])/2))
+        cv2.line(img, center1, center2, (0, 0, 255), 2)
+    return img
+
+def save_hisam_new_approach_csv(f,classification, img_path):
+    image_file_name = img_path.split('/')[-1].split('.')[0]
+    words = f['words']['words']
+    #words is a list of list with bbox coordinates of each word, create a dataframe with columns as ID, Order, Top, Left, Bottom, Right. 
+    df = pd.DataFrame(columns=['ID', 'Order', 'Top', 'Left', 'Bottom', 'Right'])
+    for i in range(len(words)):
+        df.loc[i] = [i, -1, words[i][1], words[i][0], words[i][3], words[i][2]]
+    order = 0
+    filtered_paras = f["words_sorted_per_line"]
+    bbox_list = []
+    for paras in filtered_paras:
+        for i in paras:
+            # print(i)
+            bbox_list.append(i)
+            # cv2.rectangle(img, (int(i[0]), int(i[1])), (int(i[2]), int(i[3])), (0, 255, 0), 1)
+            # cv2.putText(img, str(order), (int(i[0]), int(i[1]) - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.2, (255, 0, 0), 1)
+            order+=1
+    
+    #add order to the dataframe by checking the bbox coordinates
+    for i in range(len(bbox_list)):
+        for j in range(len(df)):
+            if bbox_list[i] == [df['Left'][j], df['Top'][j], df['Right'][j], df['Bottom'][j]]:
+                df['Order'][j] = i
+
+    output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv_hisam_approach_new'
+    #if classification is good, save the csv in good folder, else save in bad folder
+    if classification == 'good':
+        output_folder = os.path.join(output_folder, 'good')
+        message = 'CSV saved as GOOD'
+    elif classification == 'bad':
+        output_folder = os.path.join(output_folder, 'bad')
+        message = "CSV saved as BAD"
+    os.makedirs(output_folder, exist_ok=True)
+    csv_output_path = os.path.join(output_folder, f'{image_file_name}_boxes.csv')
+    df.to_csv(csv_output_path, index=False)
+    return df, message
+
+    
+
+
+    
