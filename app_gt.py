@@ -1,3 +1,490 @@
+# from utils import *
+# from flask import Flask, render_template, url_for, request
+# import os
+# import json
+# import cv2
+# import pandas as pd
+# import numpy as np
+
+# app = Flask(__name__)
+
+# # Specify the path to the folder containing your images
+
+# # IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/final_images_combined'
+# # IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/extended_dataset'
+# IMAGE_FOLDER = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Reading-Order-Dataset/"
+# app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
+
+
+# image_files = [i.split('.')[0] for i in os.listdir(IMAGE_FOLDER)]
+# image_files_full = os.listdir(IMAGE_FOLDER)
+
+# # CSV_PATH = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv/final_set_categories_combined'
+# # CSV_PATH = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv_hisam_new/good'
+# CSV_PATH = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/Reading-Order-Dataset-GTs"
+
+# csv_files_ext = [i.split('.')[0] for i in os.listdir(CSV_PATH)]
+# # csv_files = [i.split('.')[0].split('_extended_dataset_boxes')[0] for i in os.listdir(CSV_PATH)]
+# csv_files = [i.split('.')[0] for i in os.listdir(CSV_PATH)]
+# csv_files_full = os.listdir(CSV_PATH)
+
+# image_files.sort()
+# image_files_full.sort()
+
+# csv_files.sort()
+# csv_files_full.sort()
+
+
+# common_images = list(set(image_files).intersection(csv_files))
+# print('len(common_images):',len(common_images))
+
+# common_images.sort()
+
+# # common_images_only_loksabha = [i for i in common_images if 'doclaynet' in i]
+# # # common_images_only_loksabha.sort(key=lambda x: int(x.split('.')[0].split('_')[-1]))
+# # common_images = common_images_only_loksabha
+# # print(common_images)
+
+# image_files = common_images
+
+# total_images = len(image_files)
+# # print("Image files:",image_files_full)
+
+# def load_image(image_path):
+#     return cv2.imread(os.path.join(app.config['UPLOAD_FOLDER'], image_path))
+
+
+# @app.route('/')
+# def index():
+#     # get query parameters
+#     image_index = request.args.get('image_index', default=0, type=int)
+#     return show_image(image_index)
+
+# @app.route('/image/<int:image_index>')
+# def show_image(image_index):
+#     if 0 <= image_index < total_images:
+#         current_image = image_files[image_index]
+#         print("Current image full:",current_image)
+#         global image_path
+
+#         possible_extensions = ['.jpg', '.jpeg', '.png', '.gif']
+        
+#         # Check for image file with the correct extension
+#         for ext in possible_extensions:
+#             # image_path = f'images/final_images_combined/{current_image}{ext}'
+#             # if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/final_images_combined')[0],image_path)):
+#             # image_path = f'images/extended_dataset/{current_image}{ext}'
+#             # if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/extended_dataset')[0],image_path)):
+#             image_path = f'images/Reading-Order-Dataset/{current_image}{ext}'
+#             if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/Reading-Order-Dataset')[0],image_path)):
+#                 break
+#         else:
+#             return "Image file not found."
+#         return render_template('index_gt.html', image_path=image_path, current_image=current_image, image_files=image_files)
+#     else:
+#         return "Invalid image index"
+
+# @app.route('/next/<int:image_index>')
+# def next_image(image_index):
+#     next_index = (image_index + 1) % total_images
+#     return show_image(next_index)
+
+# @app.route('/prev/<int:image_index>')
+# def prev_image(image_index):
+#     prev_index = (image_index - 1) % total_images
+#     return show_image(prev_index)
+
+# # @app.route('/display_gt/<int:image_index>')
+# @app.route('/display_gt')
+# # def show_image_gt(image_index):
+# def show_image_gt():
+#     image_index = request.args.get('image_index', type=int)
+#     header_p = request.args.get('header_p', default=0, type=int)
+#     footer_p = request.args.get('footer_p', default=0, type=int)
+#     width_p = request.args.get('width_p', default=0, type=int)
+
+#     font_size = request.args.get('font_size', default=0.2, type=float)
+#     # order_font_size = request.args.get('order_font_size',default=0,type=float)
+#     font_thickness = request.args.get('font_thickness', default=1, type=int)
+#     box_thickness = request.args.get('box_thickness', default=1, type=int)
+#     line_thickness = request.args.get('line_thickness', default=1, type=int)
+
+#     attributes = (header_p, footer_p, width_p, font_size, font_thickness, box_thickness, line_thickness)
+
+#     import pandas as pd
+#     if 0 <= image_index < total_images:
+#         current_image = image_files[image_index]
+#         current_image_csv = image_files[image_index]
+
+#         print("current image:",current_image)
+
+#         possible_extensions = ['.jpg', '.jpeg', '.png', '.gif']
+#         for ext in possible_extensions:
+#             current_image_full = f'{current_image}{ext}'
+#             if os.path.exists(os.path.join(IMAGE_FOLDER, current_image_full)):
+#                 break
+
+#         print("current image full:",current_image_full)
+
+#         img_path = os.path.join(IMAGE_FOLDER, current_image_full)
+#         print('img_path',img_path)
+        
+#         # df = pd.read_csv(os.path.join(CSV_PATH, current_image.split('.')[0]+'_extended_dataset_boxes' + '.csv'))
+#         df = pd.read_csv(os.path.join(CSV_PATH, current_image_csv + '.csv'))
+
+#         img_with_gts = display_gt(img_path, df, attributes)
+        
+#         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
+#         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
+
+#         temp_output_path = os.path.join(output_folder, 'output_img_with_gts.jpg')
+#         print("Temp output path:",temp_output_path)
+#         cv2.imwrite(temp_output_path, img_with_gts)
+        
+#         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
+#         print("Relative path:",relative_path)
+        
+#         #return render_template('conn_image.html', image_path=temp_output_path)
+
+#         # return render_template('index_gt.html', current_image=current_image.split('.')[0], image_path='/images/output_images/output_img_with_gts.jpg', image_files=image_files)
+#         return render_template('index_gt.html',current_image=current_image.split('.')[0], image_path='/images/output_images/output_img_with_gts.jpg', image_files=image_files,
+#                                 header_p=header_p,
+#                                footer_p=footer_p,
+#                                width_p=width_p,
+#                                font_size=font_size,
+#                             #    order_font_size=order_font_size,
+#                                font_thickness=font_thickness,
+#                                box_thickness=box_thickness,
+#                                line_thickness=line_thickness)
+#     else:
+
+#         # return "Invalid image index"
+#         print("Invalid image index")
+#         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+
+# @app.route('/mark_image', methods=['POST'])
+# def mark_image():
+#     image_name = request.form.get('image_name')
+#     mark = request.form.get('mark')
+
+#     if image_name and mark:
+#         # Path to save the selections
+#         output_file = os.path.join(os.getcwd(), 'marked_images.txt')
+
+#         # Save the selection
+#         with open(output_file, 'a') as file:
+#             file.write(f"{image_name},{mark}\n")
+
+#         print(f"Marked {image_name} as {mark}")
+
+#     return show_image(image_files.index(image_name))
+
+
+
+# # # Route to display image with connections
+# # @app.route('/conn_image/<int:image_index>')
+# # def conn_image(image_index):
+# #     if 0 <= image_index < total_images:
+# #         current_image = image_files[image_index]
+# #         current_image_sp = image_files[image_index].split('.')[0]
+        
+# #         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
+# #         image = load_image(image_path)
+
+# #         euclidean_data = image_data.get(current_image_sp, {}).get('connections', {}).get('euclidean')
+# #         euclidean_df = pd.DataFrame(euclidean_data)
+        
+# #         image_with_connections = conn(image, euclidean_df)
+# #         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
+# #         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
+
+# #         temp_output_path = os.path.join(output_folder, 'output_conn_image.jpg')
+# #         cv2.imwrite(temp_output_path, image_with_connections)
+        
+# #         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
+
+# #         #return render_template('conn_image.html', image_path=temp_output_path)
+# #         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_conn_image.jpg', image_files=image_files)
+
+# #     else:
+    
+# #         # return "Invalid image index"
+# #         print("Invalid image index")
+# #         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+
+
+# # @app.route('/para_image_1/<int:image_index>')
+# # def para_image_1(image_index):
+    
+# #     if 0 <= image_index < total_images:
+# #         current_image = image_files[image_index]
+# #         current_image_sp = image_files[image_index].split('.')[0]
+# #         print("CI:",current_image)
+# #         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
+        
+# #         image = load_image(image_path)
+
+# #         # euclidean_data = image_data.get(current_image_sp, {}).get('paragraph', {}).get('euclidean')
+# #         # euclidean_df = pd.DataFrame(euclidean_data)
+        
+# #         component_data = image_data.get(current_image_sp, {}).get('paragraph_before_pinp', {}).get('component')
+# #         component_df = pd.DataFrame(component_data)
+# #         print("CD:",component_df)
+# #         # target_components = image_data.get(current_image_sp,{}).get('paragraph',{}).get('target_components')
+        
+# #         image_with_para = para_2(image, component_df)
+# #         print("Image with para:",image_with_para)
+# #         if image_with_para is None:
+# #             return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
+# #         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
+# #         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
+
+# #         temp_output_path = os.path.join(output_folder, 'output_para_image.jpg')
+# #         cv2.imwrite(temp_output_path, image_with_para)
+        
+# #         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
+        
+# #         #return render_template('conn_image.html', image_path=temp_output_path)
+# #         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files, error_message=None)
+
+# #     else:
+    
+# #         # return "Invalid image index"
+# #         print("Invalid image index")
+# #         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+    
+# # @app.route('/para_image_2/<int:image_index>')
+# # def para_image_2(image_index):
+# #     if 0 <= image_index < total_images:
+# #         current_image = image_files[image_index]
+# #         current_image_sp = image_files[image_index].split('.')[0]
+# #         print("CI:",current_image)
+# #         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
+        
+# #         image = load_image(image_path)
+
+
+# #         component_data = image_data.get(current_image_sp, {}).get('paragraph_after_pinp_not_ordered', {}).get('component')
+# #         component_df = pd.DataFrame(component_data)
+        
+# #         image_with_para = para_2(image, component_df)
+# #         if image_with_para is None:
+# #             return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
+
+# #         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
+# #         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
+
+# #         temp_output_path = os.path.join(output_folder, 'output_para_image.jpg')
+# #         cv2.imwrite(temp_output_path, image_with_para)
+        
+# #         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
+        
+# #         #return render_template('conn_image.html', image_path=temp_output_path)
+# #         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files)
+
+# #     else:
+    
+# #         # return "Invalid image index"
+# #         print("Invalid image index")
+# #         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+    
+
+# # @app.route('/para_image_3/<int:image_index>')
+# # def para_image_3(image_index):
+# #     if 0 <= image_index < total_images:
+# #         current_image = image_files[image_index]
+# #         current_image_sp = image_files[image_index].split('.')[0]
+# #         print("CI:",current_image)
+# #         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
+        
+# #         image = load_image(image_path)
+
+# #         component_data = image_data.get(current_image_sp, {}).get('paragraph_after_pinp_ordered', {}).get('component')
+# #         component_df = pd.DataFrame(component_data)
+        
+# #         image_with_para = para_2(image, component_df)
+# #         if image_with_para is None:
+# #             return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
+
+# #         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
+# #         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
+
+# #         temp_output_path = os.path.join(output_folder, 'output_para_image.jpg')
+# #         cv2.imwrite(temp_output_path, image_with_para)
+        
+# #         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
+        
+# #         #return render_template('conn_image.html', image_path=temp_output_path)
+# #         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files)
+
+# #     else:
+    
+# #         # return "Invalid image index"
+# #         print("Invalid image index")
+# #         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+    
+
+# # # @app.route('/final_order/<int:image_index>')
+# # @app.route('/final_order')
+# # def final_orderr():
+# #     image_index = request.args.get('image_index', type=int)
+# #     header_p = request.args.get('header_p', default=0, type=int)
+# #     footer_p = request.args.get('footer_p', default=0, type=int)
+# #     width_p = request.args.get('width_p', default=0, type=int)
+
+# #     font_size = request.args.get('font_size', default=0.6, type=float)
+# #     order_font_size = request.args.get('order_font_size',default=0.6,type=float)
+# #     font_thickness = request.args.get('font_thickness', default=1, type=int)
+# #     box_thickness = request.args.get('box_thickness', default=2, type=int)
+# #     line_thickness = request.args.get('line_thickness', default=2, type=int)
+
+# #     # classification = request.args.get('classification')
+
+
+# #     attributes = (font_size, order_font_size, font_thickness, box_thickness, line_thickness)
+# #     if 0 <= image_index < total_images:
+# #         current_image = image_files[image_index]
+# #         current_image_sp = image_files[image_index].split('.')[0]
+# #         print("CI:",current_image)
+# #         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
+        
+# #         image = load_image(image_path)
+
+# #         component = image_data.get(current_image_sp, {}).get('reading_order', {}).get('component')
+# #         component_df = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('new'))
+# #         print("Component:",component_df)
+# #         euclidean_df_2 = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('euclidean'))
+
+# #         # euclidean_data = image_data.get(current_image_sp, {}).get('reading_order', {}).get('new_euclidean')
+# #         # euclidean_df = pd.DataFrame(euclidean_data)
+        
+# #         # header_p = 10
+# #         # footer_p = 10
+        
+# #         # image_with_para,_ = reading_order_with_line(image,euclidean_df, header_p, footer_p)
+# #         component_df_1 = ignore_margins(component_df,width_p,header_p,footer_p,image_path)
+# #         #<function to ignore header and footer>
+# #         image_with_para = get_coordinates_from_component(component_df_1, euclidean_df_2,image,image_path, attributes)
+
+# #         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
+# #         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
+
+# #         temp_output_path = os.path.join(output_folder, 'output_final_order_image.jpg')
+# #         cv2.imwrite(temp_output_path, image_with_para)
+        
+# #         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
+        
+# #         #return render_template('conn_image.html', image_path=temp_output_path)
+# #         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_final_order_image.jpg', image_files=image_files,header_p=header_p,
+# #                                footer_p=footer_p,
+# #                                width_p=width_p,
+# #                                font_size=font_size,
+# #                                order_font_size=order_font_size,
+# #                                font_thickness=font_thickness,
+# #                                box_thickness=box_thickness,
+# #                                line_thickness=line_thickness)
+
+# #     else:
+    
+# #         # return "Invalid image index"
+# #         print("Invalid image index")
+# #         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+
+
+
+# # @app.route('/save_csv')
+# # def save_csv_good_bad():
+# #     image_index = request.args.get('image_index', type=int)
+# #     header_p = request.args.get('header_p', default=0, type=int)
+# #     footer_p = request.args.get('footer_p', default=0, type=int)
+# #     width_p = request.args.get('width_p', default=0, type=int)
+
+# #     font_size = request.args.get('font_size', default=0.6, type=float)
+# #     font_thickness = request.args.get('font_thickness', default=1, type=int)
+# #     box_thickness = request.args.get('box_thickness', default=2, type=int)
+# #     line_thickness = request.args.get('line_thickness', default=2, type=int)
+
+# #     classification = request.args.get('classification')
+
+
+# #     attributes = (font_size, font_thickness, box_thickness, line_thickness)
+# #     percents_to_ignore = (header_p, footer_p, width_p)
+
+# #     if 0 <= image_index < total_images:
+# #         current_image = image_files[image_index]
+# #         current_image_sp = image_files[image_index].split('.')[0]
+# #         print("CI:",current_image)
+# #         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
+# #         doc_category = app.config['UPLOAD_FOLDER'].split('/')[-1]
+        
+# #         image = load_image(image_path)
+
+# #         component = image_data.get(current_image_sp, {}).get('reading_order', {}).get('component')
+# #         component_df = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('new'))
+# #         print("Component:",component_df)
+# #         euclidean_df_2 = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('euclidean'))
+
+# #         # euclidean_data = image_data.get(current_image_sp, {}).get('reading_order', {}).get('new_euclidean')
+# #         # euclidean_df = pd.DataFrame(euclidean_data)
+        
+# #         # header_p = 10
+# #         # footer_p = 10
+        
+# #         # image_with_para,_ = reading_order_with_line(image,euclidean_df, header_p, footer_p)
+# #         component_df_1 = ignore_margins(component_df,width_p,header_p,footer_p,image_path)
+# #         #<function to ignore header and footer>
+# #         boxes_df, message = save_csv_and_metadata(component_df_1, euclidean_df_2,image,image_path,attributes,classification, doc_category, percents_to_ignore)
+        
+# #         # save_csv(component_df_1, euclidean_df_2,image,image_path,attributes,classification)
+
+        
+# #     #     return "CSV file saved successfully!", 200
+# #     # else:
+# #     #     return "Invalid image index", 400
+
+# #         # output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
+# #         # os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
+
+# #         # temp_output_path = os.path.join(output_folder, 'output_final_order_image.jpg')
+# #         # cv2.imwrite(temp_output_path, image_with_para)
+        
+# #         # relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
+        
+# #         #return render_template('conn_image.html', image_path=temp_output_path)
+# #         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_final_order_image.jpg', image_files=image_files,header_p=header_p,
+# #                                footer_p=footer_p,
+# #                                width_p=width_p,
+# #                                font_size=font_size,
+# #                                font_thickness=font_thickness,
+# #                                box_thickness=box_thickness,
+# #                                line_thickness=line_thickness,message=message, classification=classification)
+
+# #     else:
+    
+# #         # return "Invalid image index"
+# #         print("Invalid image index")
+# #         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+
+
+# # @app.route('/display_gt/<int:image_index>')
+# # def show_image(image_index):
+# #     if 0 <= image_index < total_images:
+# #         current_image = image_files[image_index]
+# #         # image_path = 'images/subsubset/' + current_image
+# #         image_path = 'images/Pagg/Dataset/Dataset/' + current_image
+# #         # image_path = 'images/selected/' + current_image
+# #         return render_template('index_gt.html', image_path=image_path, current_image=current_image, image_files=image_files)
+# #     else:
+# #         return "Invalid image index"
+
+
+# if __name__ == '__main__':
+#     app.run(host="0.0.0.0",debug=True, port=5000)
+
+
+
+###=================================================================
+
 from utils import *
 from flask import Flask, render_template, url_for, request
 import os
@@ -9,15 +496,14 @@ import numpy as np
 app = Flask(__name__)
 
 # Specify the path to the folder containing your images
-
-IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/final_images_combined'
+IMAGE_FOLDER = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/Reading-Order-Dataset/"
 app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
-
 
 image_files = [i.split('.')[0] for i in os.listdir(IMAGE_FOLDER)]
 image_files_full = os.listdir(IMAGE_FOLDER)
 
-CSV_PATH = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/csv/final_set_categories_combined'
+CSV_PATH = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/Reading-Order-Dataset-GTs"
+
 csv_files = [i.split('.')[0] for i in os.listdir(CSV_PATH)]
 csv_files_full = os.listdir(CSV_PATH)
 
@@ -27,398 +513,142 @@ image_files_full.sort()
 csv_files.sort()
 csv_files_full.sort()
 
-
 common_images = list(set(image_files).intersection(csv_files))
-print('len(common_images):',len(common_images))
-
+print('len(common_images):', len(common_images))
 common_images.sort()
-image_files = common_images
 
+image_files = common_images
 total_images = len(image_files)
-# print("Image files:",image_files_full)
 
 def load_image(image_path):
     return cv2.imread(os.path.join(app.config['UPLOAD_FOLDER'], image_path))
 
-
+# The index route now checks a "view" parameter.
 @app.route('/')
 def index():
-    # get query parameters
     image_index = request.args.get('image_index', default=0, type=int)
-    return show_image(image_index)
+    view = request.args.get('view', default='gt')  # default to "gt" for annotated view
+    if view == 'original':
+        return show_image(image_index)
+    else:
+        return show_image_gt()
 
 @app.route('/image/<int:image_index>')
 def show_image(image_index):
     if 0 <= image_index < total_images:
         current_image = image_files[image_index]
-        print("Current image full:",current_image)
+        print("Current image full:", current_image)
         global image_path
 
         possible_extensions = ['.jpg', '.jpeg', '.png', '.gif']
-        
-        # Check for image file with the correct extension
         for ext in possible_extensions:
-            image_path = f'images/final_images_combined/{current_image}{ext}'
-            if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/final_images_combined')[0],image_path)):
+            image_path = f'images/Reading-Order-Dataset/{current_image}{ext}'
+            if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/Reading-Order-Dataset')[0], image_path)):
                 break
         else:
             return "Image file not found."
-        return render_template('index_gt.html', image_path=image_path, current_image=current_image, image_files=image_files)
+        return render_template('index_gt_2.html', image_path=image_path, current_image=current_image, image_files=image_files)
     else:
         return "Invalid image index"
+
+# @app.route('/next/<int:image_index>')
+# def next_image(image_index):
+#     next_index = (image_index + 1) % total_images
+#     return show_image(next_index)
+
+# @app.route('/prev/<int:image_index>')
+# def prev_image(image_index):
+#     prev_index = (image_index - 1) % total_images
+#     return show_image(prev_index)
+
+from flask import redirect  # add redirect if not already imported
 
 @app.route('/next/<int:image_index>')
 def next_image(image_index):
     next_index = (image_index + 1) % total_images
-    return show_image(next_index)
+    view = request.args.get('view', 'gt')
+    if view == 'original':
+        return show_image(next_index)
+    else:
+        return redirect(url_for('show_image_gt', image_index=next_index))
 
 @app.route('/prev/<int:image_index>')
 def prev_image(image_index):
     prev_index = (image_index - 1) % total_images
-    return show_image(prev_index)
+    view = request.args.get('view', 'gt')
+    if view == 'original':
+        return show_image(prev_index)
+    else:
+        return redirect(url_for('show_image_gt', image_index=prev_index))
 
-@app.route('/display_gt/<int:image_index>')
-def show_image_gt(image_index):
+
+@app.route('/display_gt')
+def show_image_gt():
+    # Ensure a default image_index if not provided
+    image_index = request.args.get('image_index', default=0, type=int)
+    header_p = request.args.get('header_p', default=0, type=int)
+    footer_p = request.args.get('footer_p', default=0, type=int)
+    width_p = request.args.get('width_p', default=0, type=int)
+
+    font_size = request.args.get('font_size', default=0.2, type=float)
+    font_thickness = request.args.get('font_thickness', default=1, type=int)
+    box_thickness = request.args.get('box_thickness', default=1, type=int)
+    line_thickness = request.args.get('line_thickness', default=1, type=int)
+
+    attributes = (header_p, footer_p, width_p, font_size, font_thickness, box_thickness, line_thickness)
+
     import pandas as pd
     if 0 <= image_index < total_images:
         current_image = image_files[image_index]
         current_image_csv = image_files[image_index]
 
-        print("current image:",current_image)
-
+        print("current image:", current_image)
         possible_extensions = ['.jpg', '.jpeg', '.png', '.gif']
         for ext in possible_extensions:
             current_image_full = f'{current_image}{ext}'
             if os.path.exists(os.path.join(IMAGE_FOLDER, current_image_full)):
                 break
 
-        print("current image full:",current_image_full)
-
+        print("current image full:", current_image_full)
         img_path = os.path.join(IMAGE_FOLDER, current_image_full)
-        print('img_path',img_path)
+        print('img_path', img_path)
         
-        df = pd.read_csv(os.path.join(CSV_PATH, current_image.split('.')[0] + '.csv'))
-
-        img_with_gts = display_gt(img_path, df)
+        df = pd.read_csv(os.path.join(CSV_PATH, current_image_csv + '.csv'))
+        img_with_gts = display_gt(img_path, df, attributes)
         
         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
-        os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
-
+        os.makedirs(output_folder, exist_ok=True)
         temp_output_path = os.path.join(output_folder, 'output_img_with_gts.jpg')
-        print("Temp output path:",temp_output_path)
+        print("Temp output path:", temp_output_path)
         cv2.imwrite(temp_output_path, img_with_gts)
         
         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
-        print("Relative path:",relative_path)
+        print("Relative path:", relative_path)
         
-        #return render_template('conn_image.html', image_path=temp_output_path)
-        return render_template('index_gt.html', current_image=current_image.split('.')[0], image_path='/images/output_images/output_img_with_gts.jpg', image_files=image_files)
-
+        return render_template('index_gt_2.html', current_image=current_image.split('.')[0], image_path='/images/output_images/output_img_with_gts.jpg', image_files=image_files,
+                                header_p=header_p,
+                                footer_p=footer_p,
+                                width_p=width_p,
+                                font_size=font_size,
+                                font_thickness=font_thickness,
+                                box_thickness=box_thickness,
+                                line_thickness=line_thickness)
     else:
-
-        # return "Invalid image index"
         print("Invalid image index")
-        return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
+        return render_template("index_gt_2.html", current_image=None, image_path=None, image_files=image_files, error_message="Invalid image index")
 
+@app.route('/mark_image', methods=['POST'])
+def mark_image():
+    image_name = request.form.get('image_name')
+    mark = request.form.get('mark')
 
+    if image_name and mark:
+        output_file = os.path.join(os.getcwd(), 'marked_images.txt')
+        with open(output_file, 'a') as file:
+            file.write(f"{image_name},{mark}\n")
+        print(f"Marked {image_name} as {mark}")
 
-# # Route to display image with connections
-# @app.route('/conn_image/<int:image_index>')
-# def conn_image(image_index):
-#     if 0 <= image_index < total_images:
-#         current_image = image_files[image_index]
-#         current_image_sp = image_files[image_index].split('.')[0]
-        
-#         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
-#         image = load_image(image_path)
-
-#         euclidean_data = image_data.get(current_image_sp, {}).get('connections', {}).get('euclidean')
-#         euclidean_df = pd.DataFrame(euclidean_data)
-        
-#         image_with_connections = conn(image, euclidean_df)
-#         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
-#         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
-
-#         temp_output_path = os.path.join(output_folder, 'output_conn_image.jpg')
-#         cv2.imwrite(temp_output_path, image_with_connections)
-        
-#         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
-
-#         #return render_template('conn_image.html', image_path=temp_output_path)
-#         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_conn_image.jpg', image_files=image_files)
-
-#     else:
-    
-#         # return "Invalid image index"
-#         print("Invalid image index")
-#         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
-
-
-# @app.route('/para_image_1/<int:image_index>')
-# def para_image_1(image_index):
-    
-#     if 0 <= image_index < total_images:
-#         current_image = image_files[image_index]
-#         current_image_sp = image_files[image_index].split('.')[0]
-#         print("CI:",current_image)
-#         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
-        
-#         image = load_image(image_path)
-
-#         # euclidean_data = image_data.get(current_image_sp, {}).get('paragraph', {}).get('euclidean')
-#         # euclidean_df = pd.DataFrame(euclidean_data)
-        
-#         component_data = image_data.get(current_image_sp, {}).get('paragraph_before_pinp', {}).get('component')
-#         component_df = pd.DataFrame(component_data)
-#         print("CD:",component_df)
-#         # target_components = image_data.get(current_image_sp,{}).get('paragraph',{}).get('target_components')
-        
-#         image_with_para = para_2(image, component_df)
-#         print("Image with para:",image_with_para)
-#         if image_with_para is None:
-#             return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
-#         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
-#         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
-
-#         temp_output_path = os.path.join(output_folder, 'output_para_image.jpg')
-#         cv2.imwrite(temp_output_path, image_with_para)
-        
-#         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
-        
-#         #return render_template('conn_image.html', image_path=temp_output_path)
-#         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files, error_message=None)
-
-#     else:
-    
-#         # return "Invalid image index"
-#         print("Invalid image index")
-#         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
-    
-# @app.route('/para_image_2/<int:image_index>')
-# def para_image_2(image_index):
-#     if 0 <= image_index < total_images:
-#         current_image = image_files[image_index]
-#         current_image_sp = image_files[image_index].split('.')[0]
-#         print("CI:",current_image)
-#         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
-        
-#         image = load_image(image_path)
-
-
-#         component_data = image_data.get(current_image_sp, {}).get('paragraph_after_pinp_not_ordered', {}).get('component')
-#         component_df = pd.DataFrame(component_data)
-        
-#         image_with_para = para_2(image, component_df)
-#         if image_with_para is None:
-#             return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
-
-#         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
-#         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
-
-#         temp_output_path = os.path.join(output_folder, 'output_para_image.jpg')
-#         cv2.imwrite(temp_output_path, image_with_para)
-        
-#         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
-        
-#         #return render_template('conn_image.html', image_path=temp_output_path)
-#         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files)
-
-#     else:
-    
-#         # return "Invalid image index"
-#         print("Invalid image index")
-#         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
-    
-
-# @app.route('/para_image_3/<int:image_index>')
-# def para_image_3(image_index):
-#     if 0 <= image_index < total_images:
-#         current_image = image_files[image_index]
-#         current_image_sp = image_files[image_index].split('.')[0]
-#         print("CI:",current_image)
-#         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
-        
-#         image = load_image(image_path)
-
-#         component_data = image_data.get(current_image_sp, {}).get('paragraph_after_pinp_ordered', {}).get('component')
-#         component_df = pd.DataFrame(component_data)
-        
-#         image_with_para = para_2(image, component_df)
-#         if image_with_para is None:
-#             return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Reading Order for this image currently not available. Please try another image.")
-
-#         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
-#         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
-
-#         temp_output_path = os.path.join(output_folder, 'output_para_image.jpg')
-#         cv2.imwrite(temp_output_path, image_with_para)
-        
-#         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
-        
-#         #return render_template('conn_image.html', image_path=temp_output_path)
-#         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_para_image.jpg', image_files=image_files)
-
-#     else:
-    
-#         # return "Invalid image index"
-#         print("Invalid image index")
-#         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
-    
-
-# # @app.route('/final_order/<int:image_index>')
-# @app.route('/final_order')
-# def final_orderr():
-#     image_index = request.args.get('image_index', type=int)
-#     header_p = request.args.get('header_p', default=0, type=int)
-#     footer_p = request.args.get('footer_p', default=0, type=int)
-#     width_p = request.args.get('width_p', default=0, type=int)
-
-#     font_size = request.args.get('font_size', default=0.6, type=float)
-#     order_font_size = request.args.get('order_font_size',default=0.6,type=float)
-#     font_thickness = request.args.get('font_thickness', default=1, type=int)
-#     box_thickness = request.args.get('box_thickness', default=2, type=int)
-#     line_thickness = request.args.get('line_thickness', default=2, type=int)
-
-#     # classification = request.args.get('classification')
-
-
-#     attributes = (font_size, order_font_size, font_thickness, box_thickness, line_thickness)
-#     if 0 <= image_index < total_images:
-#         current_image = image_files[image_index]
-#         current_image_sp = image_files[image_index].split('.')[0]
-#         print("CI:",current_image)
-#         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
-        
-#         image = load_image(image_path)
-
-#         component = image_data.get(current_image_sp, {}).get('reading_order', {}).get('component')
-#         component_df = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('new'))
-#         print("Component:",component_df)
-#         euclidean_df_2 = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('euclidean'))
-
-#         # euclidean_data = image_data.get(current_image_sp, {}).get('reading_order', {}).get('new_euclidean')
-#         # euclidean_df = pd.DataFrame(euclidean_data)
-        
-#         # header_p = 10
-#         # footer_p = 10
-        
-#         # image_with_para,_ = reading_order_with_line(image,euclidean_df, header_p, footer_p)
-#         component_df_1 = ignore_margins(component_df,width_p,header_p,footer_p,image_path)
-#         #<function to ignore header and footer>
-#         image_with_para = get_coordinates_from_component(component_df_1, euclidean_df_2,image,image_path, attributes)
-
-#         output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
-#         os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
-
-#         temp_output_path = os.path.join(output_folder, 'output_final_order_image.jpg')
-#         cv2.imwrite(temp_output_path, image_with_para)
-        
-#         relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
-        
-#         #return render_template('conn_image.html', image_path=temp_output_path)
-#         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_final_order_image.jpg', image_files=image_files,header_p=header_p,
-#                                footer_p=footer_p,
-#                                width_p=width_p,
-#                                font_size=font_size,
-#                                order_font_size=order_font_size,
-#                                font_thickness=font_thickness,
-#                                box_thickness=box_thickness,
-#                                line_thickness=line_thickness)
-
-#     else:
-    
-#         # return "Invalid image index"
-#         print("Invalid image index")
-#         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
-
-
-
-# @app.route('/save_csv')
-# def save_csv_good_bad():
-#     image_index = request.args.get('image_index', type=int)
-#     header_p = request.args.get('header_p', default=0, type=int)
-#     footer_p = request.args.get('footer_p', default=0, type=int)
-#     width_p = request.args.get('width_p', default=0, type=int)
-
-#     font_size = request.args.get('font_size', default=0.6, type=float)
-#     font_thickness = request.args.get('font_thickness', default=1, type=int)
-#     box_thickness = request.args.get('box_thickness', default=2, type=int)
-#     line_thickness = request.args.get('line_thickness', default=2, type=int)
-
-#     classification = request.args.get('classification')
-
-
-#     attributes = (font_size, font_thickness, box_thickness, line_thickness)
-#     percents_to_ignore = (header_p, footer_p, width_p)
-
-#     if 0 <= image_index < total_images:
-#         current_image = image_files[image_index]
-#         current_image_sp = image_files[image_index].split('.')[0]
-#         print("CI:",current_image)
-#         image_path = os.path.join(app.config['UPLOAD_FOLDER'], current_image)
-#         doc_category = app.config['UPLOAD_FOLDER'].split('/')[-1]
-        
-#         image = load_image(image_path)
-
-#         component = image_data.get(current_image_sp, {}).get('reading_order', {}).get('component')
-#         component_df = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('new'))
-#         print("Component:",component_df)
-#         euclidean_df_2 = pd.DataFrame(image_data.get(current_image_sp, {}).get('reading_order', {}).get('euclidean'))
-
-#         # euclidean_data = image_data.get(current_image_sp, {}).get('reading_order', {}).get('new_euclidean')
-#         # euclidean_df = pd.DataFrame(euclidean_data)
-        
-#         # header_p = 10
-#         # footer_p = 10
-        
-#         # image_with_para,_ = reading_order_with_line(image,euclidean_df, header_p, footer_p)
-#         component_df_1 = ignore_margins(component_df,width_p,header_p,footer_p,image_path)
-#         #<function to ignore header and footer>
-#         boxes_df, message = save_csv_and_metadata(component_df_1, euclidean_df_2,image,image_path,attributes,classification, doc_category, percents_to_ignore)
-        
-#         # save_csv(component_df_1, euclidean_df_2,image,image_path,attributes,classification)
-
-        
-#     #     return "CSV file saved successfully!", 200
-#     # else:
-#     #     return "Invalid image index", 400
-
-#         # output_folder = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/output_images'
-#         # os.makedirs(output_folder, exist_ok=True)  # Create the folder if it doesn't exist
-
-#         # temp_output_path = os.path.join(output_folder, 'output_final_order_image.jpg')
-#         # cv2.imwrite(temp_output_path, image_with_para)
-        
-#         # relative_path = os.path.relpath(temp_output_path, app.config['UPLOAD_FOLDER'])
-        
-#         #return render_template('conn_image.html', image_path=temp_output_path)
-#         return render_template('index_gt.html', current_image=current_image, image_path='/images/output_images/output_final_order_image.jpg', image_files=image_files,header_p=header_p,
-#                                footer_p=footer_p,
-#                                width_p=width_p,
-#                                font_size=font_size,
-#                                font_thickness=font_thickness,
-#                                box_thickness=box_thickness,
-#                                line_thickness=line_thickness,message=message, classification=classification)
-
-#     else:
-    
-#         # return "Invalid image index"
-#         print("Invalid image index")
-#         return render_template("index_gt.html", current_image=None,image_path=None,image_files=image_files, error_message="Invalid image index")
-
-
-# @app.route('/display_gt/<int:image_index>')
-# def show_image(image_index):
-#     if 0 <= image_index < total_images:
-#         current_image = image_files[image_index]
-#         # image_path = 'images/subsubset/' + current_image
-#         image_path = 'images/Pagg/Dataset/Dataset/' + current_image
-#         # image_path = 'images/selected/' + current_image
-#         return render_template('index_gt.html', image_path=image_path, current_image=current_image, image_files=image_files)
-#     else:
-#         return "Invalid image index"
-
+    return show_image(image_files.index(image_name))
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",debug=True, port=4999)
-
+    app.run(host="0.0.0.0", debug=True, port=5000)
