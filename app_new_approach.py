@@ -10,8 +10,11 @@ app = Flask(__name__)
 
 # Specify the path to the folder containing your images
 
+IMAGE_FOLDER = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/extended_dataset"
 # IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/final_images_combined_extended'
-IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/extended_dataset'
+# IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/extended_dataset_br'
+# IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/yojana_telugu_mal'
+# IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/prima_challenging'
 # IMAGE_FOLDER = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/M6doc_mz'
 # IMAGE_FOLDER = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/static/images/subset"
 app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
@@ -40,6 +43,15 @@ image_files_full.sort()
 total_images = len(image_files)
 # print("Image files:",image_files_full)
 
+global json_path
+json_path = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_1191.json"
+# json_path = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_yoj_tel_mal.json"
+# json_path = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_ext_br.json"
+# json_path = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_ext_br_v2.json"
+# json_path = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_ext_br_v2_cpfix.json"
+# json_path = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_challenging_prima.json"
+# json_path = "/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_challenging_prima_v2.json"
+
 def load_image(image_path):
     return cv2.imread(os.path.join(app.config['UPLOAD_FOLDER'], image_path))
 
@@ -63,10 +75,18 @@ def show_image(image_index):
         for ext in possible_extensions:
             # image_path = f'images/subset/{current_image}{ext}'
             # if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/subset')[0],image_path)):
-            # image_path = f'images/final_images_combined_extended/{current_image}{ext}'
-            # if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/final_images_combined_extended')[0],image_path)):
+
             image_path = f'images/extended_dataset/{current_image}{ext}'
             if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/extended_dataset')[0],image_path)):
+
+            # image_path = f'images/final_images_combined_extended/{current_image}{ext}'
+            # if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/final_images_combined_extended')[0],image_path)):
+            # image_path = f'images/extended_dataset_br/{current_image}{ext}'
+            # if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/extended_dataset_br')[0],image_path)):
+            # image_path = f'images/yojana_telugu_mal/{current_image}{ext}'
+            # if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/yojana_telugu_mal')[0],image_path)):
+            # image_path = f'images/prima_challenging/{current_image}{ext}'
+            # if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/prima_challenging')[0],image_path)):
             # image_path = f'images/M6doc_mz/{current_image}{ext}'
             # if os.path.exists(os.path.join(IMAGE_FOLDER.split('images/M6doc_mz')[0],image_path)):
                 break
@@ -88,7 +108,7 @@ def prev_image(image_index):
 
 @app.route('/display_layout/<int:image_index>>')
 def show_image_layout(image_index):
-    json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_1191.json'
+    # json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_challenging_prima.json'
 
     import pandas as pd
     if 0 <= image_index < total_images:
@@ -135,7 +155,7 @@ def show_image_layout(image_index):
 
 @app.route('/display_words/<int:image_index>>')
 def show_image_words(image_index):
-    json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_1191.json'
+    # json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_challenging_prima.json'
 
     import pandas as pd
     if 0 <= image_index < total_images:
@@ -182,7 +202,7 @@ def show_image_words(image_index):
 
 @app.route('/display_paras/<int:image_index>>')
 def show_image_paras(image_index):
-    json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_1191.json'
+    # json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_challenging_prima.json'
 
     import pandas as pd
     if 0 <= image_index < total_images:
@@ -229,7 +249,7 @@ def show_image_paras(image_index):
 
 @app.route('/display_fparas/<int:image_index>>')
 def show_image_fparas(image_index):
-    json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_1191.json'
+    # json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_challenging_prima.json'
 
     import pandas as pd
     if 0 <= image_index < total_images:
@@ -276,7 +296,7 @@ def show_image_fparas(image_index):
 
 @app.route('/display_sparas/<int:image_index>>')
 def show_image_sorted_paras(image_index):
-    json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_1191.json'
+    # json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_challenging_prima.json'
 
     import pandas as pd
     if 0 <= image_index < total_images:
@@ -323,7 +343,7 @@ def show_image_sorted_paras(image_index):
 
 @app.route('/display_lines_sorted/<int:image_index>>')
 def show_image_sorted_lines(image_index):
-    json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_1191.json'
+    # json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_challenging_prima.json'
 
     import pandas as pd
     if 0 <= image_index < total_images:
@@ -370,7 +390,7 @@ def show_image_sorted_lines(image_index):
 
 @app.route('/display_words_sorted/<int:image_index>>')
 def show_image_sorted_words(image_index):
-    json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_1191.json'
+    # json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_challenging_prima.json'
 
     import pandas as pd
     if 0 <= image_index < total_images:
@@ -416,7 +436,7 @@ def show_image_sorted_words(image_index):
 
 @app.route('/save_csv')
 def save_csv_good_bad():
-    json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_1191.json'
+    # json_path = '/home/vatsasree/Research/scripts/applic/Reading-Order-Visualizer/lines_paras_jsons/reading_order_results_challenging_prima.json'
 
     image_index = request.args.get('image_index', type=int)
     header_p = request.args.get('header_p', default=0, type=int)
